@@ -9,10 +9,6 @@ Rechtschreibtraining für Klasse 3 und 4 (Baden-Württemberg), als installierbar
 4. Nach ein bis zwei Minuten ist die App erreichbar unter `https://DEIN-NAME.github.io/wortdetektive/`.
 5. Neuen QR-Code mit dieser Adresse erzeugen.
 
-## Vorher erledigen
-- `impressum.html`: Name, Anschrift und E-Mail eintragen (Pflicht bei öffentlichen Seiten in Deutschland).
-- Wortlisten von einer Lehrkraft prüfen lassen.
-
 ## Installieren auf Tablet oder Handy
 - iPad/iPhone (Safari): Teilen → „Zum Home-Bildschirm“.
 - Android (Chrome): Menü → „App installieren“.
