@@ -1,4 +1,4 @@
-const CACHE='wortdetektive-v5';
+const CACHE='wortdetektive-v0.9';
 const FILES=['./','index.html','manifest.webmanifest','impressum.html','datenschutz.html','icons/icon.svg','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png',
 'fonts/baloo-2-latin-600-normal.woff2','fonts/baloo-2-latin-700-normal.woff2','fonts/baloo-2-latin-800-normal.woff2','fonts/lexend-latin-400-normal.woff2','fonts/lexend-latin-500-normal.woff2','fonts/lexend-latin-600-normal.woff2'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
