@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#3D5AFE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Wortdetektive">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Die Wortdetektive</title>
+
+<style>
+@font-face{font-family:'Baloo 2';font-weight:600;font-style:normal;font-display:swap;src:url(fonts/baloo-2-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Baloo 2';font-weight:700;font-style:normal;font-display:swap;src:url(fonts/baloo-2-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Baloo 2';font-weight:800;font-style:normal;font-display:swap;src:url(fonts/baloo-2-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'Lexend';font-weight:400;font-style:normal;font-display:swap;src:url(fonts/lexend-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Lexend';font-weight:500;font-style:normal;font-display:swap;src:url(fonts/lexend-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Lexend';font-weight:600;font-style:normal;font-display:swap;src:url(fonts/lexend-latin-600-normal.woff2) format('woff2')}
+
+/* Layout: Lernpfad im Zickzack wie ein Detektiv-Fahrplan, darunter Lernkarten und Aufgaben in einer schmalen Heftseite (max 560px) */
+:root{
+  --bg:#F2F7FF; --card:#FFFFFF; --ink:#1B2559; --ink-soft:#56628F; --line:#D3DDF3; --lineatur:#BFD0F2;
+  --primary:#3D5AFE; --primary-deep:#2038C9; --on-primary:#FFFFFF;
+  --sun:#FFC83D; --sun-deep:#D9A000; --sun-ink:#4A3600;
+  --ok:#2FA84F; --ok-bg:#DFF6E5; --ok-deep:#1B7536;
+  --bad:#E5484D; --bad-bg:#FFE4E5; --bad-deep:#B3262B;
+  --s0:#7BAA2E; --s1:#4A9FC4; --s2:#E8960C; --s3:#EC735A;
+  --shadow:0 2px 0 rgba(27,37,89,.08); --onc:#FFFFFF;
+  --f-display:'Baloo 2','Trebuchet MS',system-ui,sans-serif;
+  --f-body:'Lexend','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F152E; --card:#192146; --ink:#EAF0FF; --ink-soft:#A6B1DD; --line:#2B3767; --lineatur:#2C3A6E;
+  --primary:#6F86FF; --primary-deep:#4A62E6; --on-primary:#0F152E;
+  --sun:#FFD25E; --sun-deep:#C99400; --sun-ink:#3D2D00;
+  --ok:#43C466; --ok-bg:#12351F; --ok-deep:#7BE09A;
+  --bad:#FF6B70; --bad-bg:#3A1A20; --bad-deep:#FF9DA1;
+  --s0:#A6D05A; --s1:#7CC3E6; --s2:#FFC24A; --s3:#FF9A82; --shadow:0 2px 0 rgba(0,0,0,.35); --onc:#0F152E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F152E; --card:#192146; --ink:#EAF0FF; --ink-soft:#A6B1DD; --line:#2B3767; --lineatur:#2C3A6E;
+  --primary:#6F86FF; --primary-deep:#4A62E6; --on-primary:#0F152E;
+  --sun:#FFD25E; --sun-deep:#C99400; --sun-ink:#3D2D00;
+  --ok:#43C466; --ok-bg:#12351F; --ok-deep:#7BE09A;
+  --bad:#FF6B70; --bad-bg:#3A1A20; --bad-deep:#FF9DA1;
+  --s0:#A6D05A; --s1:#7CC3E6; --s2:#FFC24A; --s3:#FF9A82; --shadow:0 2px 0 rgba(0,0,0,.35); --onc:#0F152E; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;
+  padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:560px;margin:0 auto;padding-block:14px 200px}
+.opt:disabled,.tok:disabled{cursor:default;color:inherit;opacity:1}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:800;font-size:22px}
+.brand svg{width:40px;height:40px;flex:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--line);border-radius:999px;padding:3px 12px;font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+.chip svg{width:18px;height:18px}
+.seg{display:flex;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:4px;gap:4px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:transparent;border-radius:12px;padding:8px 6px;font-weight:600;color:var(--ink-soft)}
+.seg button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.hello{display:flex;gap:12px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:12px 14px;margin-bottom:8px}
+.hello svg{width:64px;height:64px;flex:none}
+.hello p{font-size:15px;color:var(--ink-soft)}
+.hello b{color:var(--ink);font-family:var(--f-display);font-size:19px;display:block}
+.banner{display:flex;align-items:center;gap:10px;border-radius:16px;padding:10px 14px;margin:22px 0 6px;color:var(--onc);font-family:var(--f-display);font-weight:700;font-size:18px}
+.banner small{display:block;font-family:var(--f-body);font-weight:400;font-size:13px;opacity:.92}
+.path{display:flex;flex-direction:column;align-items:center;gap:6px}
+.stop{display:flex;flex-direction:column;align-items:center;text-align:center;transform:translateX(var(--dx,0));width:200px;padding-block:6px}
+.node{width:78px;height:78px;border-radius:50%;border:0;background:var(--c);color:var(--onc);display:grid;place-items:center;box-shadow:0 6px 0 var(--cd);position:relative;transition:transform .12s}
+.node:active{transform:translateY(4px);box-shadow:0 2px 0 var(--cd)}
+.node svg{width:50px;height:50px}
+.node.locked{background:var(--line);box-shadow:0 6px 0 var(--lineatur);color:var(--ink-soft);cursor:not-allowed}
+.node.current::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:4px solid var(--sun);animation:ring 1.8s ease-in-out infinite}
+@keyframes ring{50%{transform:scale(1.07);opacity:.55}}
+.stars{display:flex;gap:2px;margin-top:10px;height:20px}
+.stars svg{width:20px;height:20px}
+.stop .t{font-family:var(--f-display);font-weight:700;font-size:17px;margin-top:2px}
+.stop .s{font-size:13px;color:var(--ink-soft);line-height:1.3}
+.card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.btn{border:0;border-radius:16px;padding:13px 22px;font-family:var(--f-display);font-weight:800;font-size:19px;letter-spacing:.3px;text-transform:uppercase;background:var(--primary);color:var(--on-primary);box-shadow:0 5px 0 var(--primary-deep);width:100%}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--primary-deep)}
+.btn:disabled{background:var(--line);color:var(--ink-soft);box-shadow:0 5px 0 var(--lineatur);cursor:not-allowed}
+.btn.sun{background:var(--sun);color:var(--sun-ink);box-shadow:0 5px 0 var(--sun-deep)}
+.btn.ghost{background:transparent;color:var(--primary);box-shadow:none;border:2px solid var(--line)}
+.btn.sm{width:auto;font-size:15px;padding:8px 14px;box-shadow:0 3px 0 var(--primary-deep)}
+.btn.ghost.sm{box-shadow:none}
+.lesson-top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.x{border:0;background:transparent;color:var(--ink-soft);width:36px;height:36px;border-radius:50%;font-size:26px;line-height:1}
+.bar{flex:1;height:16px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .35s}
+.hearts{display:flex;gap:3px;align-items:center;font-weight:700;color:var(--bad)}
+.hearts svg{width:24px;height:24px}
+.hearts .off{opacity:.25}
+.q{font-family:var(--f-display);font-weight:700;font-size:24px;margin-bottom:14px}
+.wordbox{font-family:var(--f-display);font-weight:600;font-size:36px;text-align:center;padding:16px 8px 12px;border-radius:16px;margin-bottom:16px;
+  background:linear-gradient(var(--lineatur),var(--lineatur)) 0 22px/100% 2px no-repeat,linear-gradient(var(--lineatur),var(--lineatur)) 0 calc(100% - 22px)/100% 2px no-repeat,var(--card);border:2px solid var(--line)}
+.opts{display:grid;gap:10px}
+.opt{background:var(--card);border:2px solid var(--line);box-shadow:0 4px 0 var(--line);border-radius:16px;padding:13px 16px;font-family:var(--f-display);font-weight:600;font-size:26px;text-align:left}
+.opt[aria-pressed="true"]{border-color:var(--primary);box-shadow:0 4px 0 var(--primary);background:color-mix(in srgb,var(--primary) 10%,var(--card))}
+.opt.ok{border-color:var(--ok);box-shadow:0 4px 0 var(--ok);background:var(--ok-bg)}
+.opt.no{border-color:var(--bad);box-shadow:0 4px 0 var(--bad);background:var(--bad-bg)}
+.opt.sm{font-size:19px;font-family:var(--f-body)}
+.inp{width:100%;font-family:var(--f-display);font-weight:600;font-size:32px;text-align:center;padding:12px;border-radius:16px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.inp.ok{border-color:var(--ok);background:var(--ok-bg)}.inp.no{border-color:var(--bad);background:var(--bad-bg)}
+.sent{display:flex;flex-wrap:wrap;gap:8px;font-size:24px;font-family:var(--f-display);font-weight:600;padding:8px 0 16px}
+.tok{border:2px solid transparent;background:transparent;border-bottom:3px dashed var(--lineatur);border-radius:10px;padding:2px 8px;font-family:inherit;font-weight:inherit;font-size:inherit}
+.tok[aria-pressed="true"]{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,var(--card))}
+.tok.ok{border-color:var(--ok);background:var(--ok-bg)}.tok.no{border-color:var(--bad);background:var(--bad-bg)}
+.letters{display:flex;justify-content:center;align-items:stretch;flex-wrap:wrap;row-gap:10px;padding:14px 0 18px}
+.ltr{font-family:var(--f-display);font-weight:700;font-size:var(--fs,40px);line-height:1;display:flex;align-items:center;padding:8px 1px}
+.gap{width:var(--gw,20px);border:0;background:transparent;position:relative;padding:0;border-radius:8px}
+.gap::before{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:0;border-left:2px dashed var(--lineatur);transform:translateX(-50%)}
+.gap[aria-pressed="true"]::before{border-left:5px solid var(--primary);border-radius:4px}
+.gap.ok::before{border-left:5px solid var(--ok)}.gap.no::before{border-left:5px solid var(--bad)}
+.gap.miss::before{border-left:5px dotted var(--ok)}
+.hint{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.tipbox{margin-top:10px;border-radius:16px;padding:12px 14px;background:color-mix(in srgb,var(--sun) 24%,var(--card));border:2px solid var(--sun);font-size:16px}
+.tag{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:2px 12px 2px 8px;color:var(--onc);font-weight:600;font-size:14px;background:var(--c)}
+.tag svg{width:18px;height:18px}
+.fb{position:fixed;left:0;right:0;bottom:0;padding:16px max(16px,env(safe-area-inset-left,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));border-top:2px solid var(--line);background:var(--bg);z-index:5}
+.fb>div{max-width:560px;margin:0 auto}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok)}
+.fb.no{background:var(--bad-bg);border-color:var(--bad)}
+.fb h3{font-size:22px;margin-bottom:2px}
+.fb.ok h3{color:var(--ok-deep)}.fb.no h3{color:var(--bad-deep)}
+.fb p{font-size:16px;margin-bottom:12px}
+.fb.ok .btn{background:var(--ok);box-shadow:0 5px 0 var(--ok-deep);color:var(--onc)}
+.fb.no .btn{background:var(--bad);box-shadow:0 5px 0 var(--bad-deep);color:var(--onc)}
+.center{text-align:center}
+.big-owl{width:150px;height:150px;margin:6px auto 0;display:block}
+.learn h2{font-size:28px;margin:8px 0 6px}
+.learn .lead{color:var(--ink-soft);margin-bottom:14px}
+.ex{display:flex;flex-wrap:wrap;gap:8px 18px;margin:10px 0}
+.ex div{font-family:var(--f-display);font-weight:600;font-size:22px}
+.ex small{display:block;font-family:var(--f-body);font-weight:400;font-size:13px;color:var(--ink-soft)}
+.ex em{font-style:normal;color:var(--bad)}.ex strong{color:var(--ok-deep)}
+.rule{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:2px dashed var(--line)}
+.rule:first-of-type{border-top:0}
+.rule b{flex:none;width:30px;height:30px;border-radius:50%;background:var(--c,var(--primary));color:var(--onc);display:grid;place-items:center;font-family:var(--f-display);font-size:16px}
+.big-num{font-family:var(--f-display);font-weight:800;font-size:56px;line-height:1}
+.res-stars{display:flex;justify-content:center;gap:8px;margin:10px 0}
+.res-stars svg{width:54px;height:54px}
+.res-stars svg.pop{animation:pop .5s both}
+@keyframes pop{0%{transform:scale(0) rotate(-30deg)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stats .card{padding:10px;text-align:center}
+.stats b{display:block;font-family:var(--f-display);font-size:26px}
+.stats span{font-size:13px;color:var(--ink-soft)}
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--line);z-index:4;
+  padding:6px max(16px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.nav>div{max-width:560px;margin:0 auto;display:flex;gap:8px}
+.nav button{flex:1;border:0;background:transparent;border-radius:14px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:0;font-weight:600;font-size:13px;color:var(--ink-soft)}
+.nav button svg{width:28px;height:28px}
+.nav button[aria-current="page"]{color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,var(--card))}
+.cheat h2{font-size:24px;margin:22px 0 8px}
+.scard{border-left:10px solid var(--c);}
+.scard h3{display:flex;align-items:center;gap:8px;font-size:22px}
+.scard h3 svg{width:30px;height:30px;color:var(--c)}
+.scard p{margin-top:6px}
+.reset{margin-top:26px;text-align:center}
+.reset button{background:none;border:0;color:var(--ink-soft);text-decoration:underline;font-size:14px}
+@media (max-width:420px){.wordbox{font-size:30px}.opt{font-size:23px}.stop{width:170px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app" class="wrap"></div>
+<script>
+'use strict';
+/* ---------- Icons & Maskottchen ---------- */
+const PA='fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"';
+const ICO={
+ sw:`<svg viewBox="0 0 24 24" ${PA}><path d="M2.5 9.5a4.7 4.7 0 0 0 9.4 0M12.1 9.5a4.7 4.7 0 0 0 9.4 0"/><path d="M7 18h.01M17 18h.01"/></svg>`,
+ vl:`<svg viewBox="0 0 24 24" ${PA}><path d="M3 12h16M14 6l6 6-6 6"/></svg>`,
+ ab:`<svg viewBox="0 0 24 24" ${PA}><path d="M12 21V11M12 11 6 5M12 11l6-6M6 5V3M18 5V3"/></svg>`,
+ mk:`<svg viewBox="0 0 24 24" ${PA}><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>`,
+ sz:`<svg viewBox="0 0 24 24"><text x="12" y="19" text-anchor="middle" font-size="22" font-weight="800" fill="currentColor" font-family="Baloo 2,sans-serif">ß</text></svg>`,
+ gr:`<svg viewBox="0 0 24 24"><text x="12" y="19" text-anchor="middle" font-size="19" font-weight="800" fill="currentColor" font-family="Baloo 2,sans-serif">Aa</text></svg>`,
+ t1:`<svg viewBox="0 0 24 24" ${PA}><path d="M3 8h6M15 8h6M12 3v18" stroke-dasharray="1 4"/><path d="M12 3v18" stroke-dasharray="3 3"/><path d="M4 17h5M15 17h5"/></svg>`,
+ t2:`<svg viewBox="0 0 24 24" ${PA}><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M8 15 19 4M16 15 5 4"/></svg>`,
+ fin:`<svg viewBox="0 0 24 24" ${PA}><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></svg>`,
+ book:`<svg viewBox="0 0 24 24" ${PA}><path d="M4 5c3-1.5 6-1.5 8 1 2-2.5 5-2.5 8-1v14c-3-1.5-6-1.5-8 1-2-2.5-5-2.5-8-1z"/><path d="M12 6v14"/></svg>`,
+ path:`<svg viewBox="0 0 24 24" ${PA}><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8 17c6 0 2-10 8-10"/></svg>`,
+ lock:`<svg viewBox="0 0 24 24" ${PA}><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`,
+ flame:`<svg viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 2 4-5z" fill="#FF8A1F"/><path d="M12 22a3 3 0 0 1-3-3c0-2 3-3 3-6 2 2 3 4 3 6a3 3 0 0 1-3 3z" fill="#FFD25E"/></svg>`,
+ bolt:`<svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="#FFC83D" stroke="#D9A000" stroke-width="1.5" stroke-linejoin="round"/></svg>`
+};
+const heart=on=>`<svg viewBox="0 0 24 24" class="${on?'':'off'}"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.8-8 11-8 11z" fill="currentColor"/></svg>`;
+const star=on=>`<svg viewBox="0 0 24 24"><path d="m12 2.5 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" fill="${on?'#FFC83D':'var(--line)'}" stroke="${on?'#D9A000':'var(--lineatur)'}" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+const OWL=(cls='')=>`<svg class="${cls}" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="60" rx="30" ry="32" fill="#4C6EF5"/><ellipse cx="50" cy="68" rx="19" ry="21" fill="#DDE6FF"/><path d="M26 34 22 16l16 9zM74 34l4-18-16 9z" fill="#3856D8"/><path d="M30 28q20-18 40 0l-3 8H33z" fill="#2B3A67"/><path d="M28 30h44" stroke="#FFC83D" stroke-width="3"/><circle cx="39" cy="46" r="11" fill="#fff"/><circle cx="61" cy="46" r="11" fill="#fff"/><circle cx="41" cy="47" r="5.5" fill="#1B2559"/><circle cx="59" cy="47" r="5.5" fill="#1B2559"/><circle cx="43" cy="45" r="1.8" fill="#fff"/><circle cx="61" cy="45" r="1.8" fill="#fff"/><path d="M45 54h10l-5 8z" fill="#FFC83D"/><circle cx="76" cy="70" r="9" fill="none" stroke="#8A5A2B" stroke-width="3.5"/><circle cx="76" cy="70" r="6" fill="#BFE0FF" opacity=".55"/><path d="m82 77 9 12" stroke="#8A5A2B" stroke-width="5" stroke-linecap="round"/><path d="M38 90v5M62 90v5" stroke="#FFC83D" stroke-width="4" stroke-linecap="round"/></svg>`;
+
+/* ---------- Strategien (Spickzettel) ---------- */
+const STRAT=[
+ {n:'Schwingen',a:'Mitsprechen',c:'--s0',i:'sw',t:'Sprich das Wort langsam in Silben und schwinge dazu mit dem Arm. Jede Silbe ist ein Bogen. So hörst du, wo ein Doppelmitlaut oder ck steht.',e:'Son-ne · Kat-ze · ba-cken'},
+ {n:'Verlängern',a:'Weiterschwingen',c:'--s1',i:'vl',t:'Hörst du am Wortende nicht genau, ob b oder p, d oder t, g oder k kommt? Mach das Wort länger. Nomen: Mehrzahl bilden. Verben: Grundform bilden. Adjektive: ein Nomen dazustellen.',e:'Hund → Hunde · Korb → Körbe · sagt → sagen'},
+ {n:'Ableiten',a:'Verwandte Wörter',c:'--s2',i:'ab',t:'Such ein verwandtes Wort, dessen Schreibung du sicher kennst. Aus a wird ä, aus au wird äu. Gibt es kein solches Wort, schreibst du meist e oder eu.',e:'Häuser ← Haus · Hände ← Hand · Bäcker ← backen'},
+ {n:'Merken',a:'Merkwörter',c:'--s3',i:'mk',t:'Manche Wörter musst du dir einprägen. Markiere die schwierige Stelle in Farbe, schau genau hin, decke das Wort zu, schreibe es und vergleiche.',e:'Vogel · Zahn · Meer · Tier'}
+];
+
+/* ---------- Lernpfad ---------- */
+const GROUPS=[
+ {t:'Vier Strategien',s:'Die Werkzeuge der Wortdetektive',c:'--s0'},
+ {t:'Besondere Regeln',s:'ss oder ß? Groß oder klein?',c:'--s2'},
+ {t:'Wörter trennen',s:'Wo darf ein Wort am Zeilenende getrennt werden?',c:'--s1'},
+ {t:'Abschlussfall',s:'Alles zusammen',c:'--s3'}
+];
+const UNITS=[
+ {id:'sw',g:0,t:'Silben schwingen',s:'Mitsprechen und Doppelmitlaute',c:'--s0',i:'sw',st:0,
+  tip:'Schwinge das Wort in Silben. Ist der Selbstlaut kurz, folgen oft zwei Mitlaute (nn, mm, tt, ck, tz).',
+  learn:{lead:'Sprich das Wort langsam und schwinge mit dem Arm: Jede Silbe ist ein Bogen. So hörst du, wie das Wort gebaut ist.',
+   rules:['Schwinge das Wort: schwim-men, Son-ne. Jede Silbe bekommt einen Bogen.','Ist der Selbstlaut (a, e, i, o, u) kurz, folgen meist zwei Mitlaute: Kan-ne, Mut-ter, Pup-pe.','Statt kk schreibst du ck, statt zz schreibst du tz: ba-cken, Kat-ze.'],
+   ex:[['Sone','Sonne','Son-ne'],['bakken','backen','ba-cken'],['Kaze','Katze','Kat-ze']]}},
+ {id:'vl',g:0,t:'Verlängern',s:'b oder p, d oder t, g oder k?',c:'--s1',i:'vl',st:1,
+  tip:'Mach das Wort länger. Nomen: Mehrzahl. Verben: Grundform (wir …). Adjektive: ein Nomen dazu. Dann hörst du den Buchstaben.',
+  learn:{lead:'Am Wortende klingen b und p, d und t, g und k gleich. Mach das Wort länger, dann hörst du den richtigen Buchstaben.',
+   rules:['Nomen: Bilde die Mehrzahl. Hund → Hunde, du hörst ein d.','Verben: Bilde die Grundform. er sagt → sagen, du hörst ein g.','Adjektive: Stelle ein Nomen dazu. gelb → die gelbe Blume, du hörst ein b.'],
+   ex:[['Hunt','Hund','die Hunde'],['Korp','Korb','die Körbe'],['Berk','Berg','die Berge']]}},
+ {id:'ab',g:0,t:'Ableiten',s:'a oder e? au oder eu?',c:'--s2',i:'ab',st:2,
+  tip:'Such ein verwandtes Wort mit a oder au. Gibt es eins, schreibst du ä oder äu. Sonst e oder eu.',
+  learn:{lead:'Viele Wörter gehören zu einer Wortfamilie. Das verwandte Wort verrät dir, wie du schreibst.',
+   rules:['ä oder e? Such ein verwandtes Wort mit a: Hände ← Hand, Gärten ← Garten.','äu oder eu? Such ein verwandtes Wort mit au: Häuser ← Haus, Mäuse ← Maus.','Findest du kein verwandtes Wort mit a oder au, schreibst du meist e oder eu: Feuer, Freund, Eule.'],
+   ex:[['Hende','Hände','Hand'],['Heuser','Häuser','Haus'],['Bekker','Bäcker','backen']]}},
+ {id:'mk',g:0,t:'Merkwörter',s:'Vogel, Zahn, Meer und mehr',c:'--s3',i:'mk',st:3,
+  tip:'Dieses Wort kannst du nicht herleiten. Präge dir die schwierige Stelle ein: Dehnungs-h, Doppelvokal, ie oder V.',
+  learn:{lead:'Manche Wörter kannst du nicht herleiten. Das sind Merkwörter. Du musst dir die besondere Stelle einprägen.',
+   rules:['Langer Selbstlaut: oft mit Dehnungs-h (Zahn, Uhr, sehr), mit Doppelvokal (Meer, Boot, Haar) oder mit ie (Tier, Biene).','Das V klingt oft wie f: Vogel, Vater, viel.','Merk-Trick: Färbe die schwierige Stelle, schau genau hin, decke zu, schreibe und vergleiche.'],
+   ex:[['Fogel','Vogel','V wie Vogel'],['Zan','Zahn','Dehnungs-h'],['Mer','Meer','Doppel-e']]}},
+ {id:'sz',g:1,t:'ss oder ß?',s:'Die neue Rechtschreibung',c:'--s2',i:'sz',st:-1,
+  tip:'Sprich das Wort: Ist der Selbstlaut kurz, schreibst du ss. Ist er lang oder ein Doppellaut (au, ei, eu), schreibst du ß.',
+  learn:{lead:'Seit der Rechtschreibreform gilt eine klare Regel: Nach kurzem Selbstlaut steht ss, nach langem Selbstlaut oder Doppellaut steht ß.',
+   rules:['Kurzer Selbstlaut: ss. Fluss, Wasser, müssen, Schloss.','Langer Selbstlaut oder Doppellaut (au, ei, eu): ß. Fuß, Straße, heiß, draußen.','dass mit ss ist ein Bindewort. Probe: Passt dieses, jenes oder welches? Dann schreibst du das mit s, sonst dass.'],
+   ex:[['Fluß','Fluss','kurzes u'],['Fuss','Fuß','langes u'],['das','dass','Ich weiß, dass …']]}},
+ {id:'gr',g:1,t:'Groß oder klein?',s:'Nomen schreibst du groß',c:'--s3',i:'gr',st:-1,
+  tip:'Kannst du der, die oder das davorsetzen? Dann ist es ein Nomen und du schreibst es groß.',
+  learn:{lead:'Nomen sind Namen für Menschen, Tiere, Dinge und Gefühle. Sie schreibst du immer groß, genau wie den Anfang eines Satzes.',
+   rules:['Artikeltest: der Hund, die Freude, das Haus. Geht das, schreibst du groß.','Verben (rennen) und Adjektive (schön) schreibst du klein.','Nach das, beim, zum, vom wird ein Verb zum Nomen: das Lachen, beim Schwimmen, zum Essen.'],
+   ex:[['hund','Hund','der Hund'],['Spielen','spielen','Wir spielen'],['beim schwimmen','beim Schwimmen','beim + Nomen']]}},
+ {id:'t1',g:2,t:'Silben trennen',s:'Zwischen den Silben schneiden',c:'--s1',i:'t1',st:-1,
+  tip:'Schwinge das Wort. Zwischen zwei Silbenbögen darfst du trennen. Ein einzelner Mitlaut geht zur nächsten Silbe.',
+  learn:{lead:'Am Zeilenende darfst du Wörter trennen. Du trennst immer zwischen den Silben. Schwinge das Wort, dann findest du die Trennstellen.',
+   rules:['Jede Silbe hat einen Selbstlaut (a, e, i, o, u) oder einen Doppellaut (au, ei, eu, äu).','Ein einzelner Mitlaut kommt in die nächste Silbe: Ho-se, Ne-bel, Ru-he (das h gehört zur nächsten Silbe).','Zusammengesetzte Wörter trennst du zuerst zwischen den Wörtern: Haus-tür, Schul-ran-zen. Wörter mit nur einer Silbe trennst du nicht: Hand.'],
+   ex:[['Hose','Ho-se',''],['Haustür','Haus-tür',''],['Hand','Hand','nicht trennbar']]}},
+ {id:'t2',g:2,t:'ck, sch und st',s:'Was bleibt zusammen?',c:'--s2',i:'t2',st:-1,
+  tip:'ck, ch und sch bleiben zusammen. Bei mehreren Mitlauten (st, tz, nn, mm) kommt der letzte in die nächste Silbe.',
+  learn:{lead:'Manche Buchstaben bilden zusammen nur einen Laut. Die darfst du nicht auseinanderreißen.',
+   rules:['ck, ch und sch bleiben zusammen und kommen in die nächste Silbe: ba-cken, la-chen, wa-schen.','Bei mehreren Mitlauten kommt der letzte in die nächste Silbe: Kat-ze, Mut-ter, Kan-ne.','Seit der Rechtschreibreform darf auch st getrennt werden: Fens-ter, Kas-ten, Wes-te.'],
+   ex:[['bak-ken','ba-cken',''],['Ta-sche','Ta-sche','sch bleibt'],['Fen-ster','Fens-ter','st wird getrennt']]}},
+ {id:'mx',g:3,t:'Detektiv-Prüfung',s:'Zehn Fälle aus allem',c:'--s3',i:'fin',st:-1,
+  tip:'Überlege: Schwingen, Verlängern, Ableiten oder Merken? Welche Strategie passt zu diesem Wort?',
+  learn:{lead:'Jetzt kommt alles zusammen. Bei jedem Wort entscheidest du selbst, welche Strategie dir hilft. Viel Erfolg, Wortdetektiv!',
+   rules:['Erst schwingen: Wie ist das Wort gebaut?','Dann prüfen: Verlängern oder Ableiten möglich? Sonst ist es ein Merkwort.','Zum Schluss kontrollieren: Lies das Wort noch einmal genau.'],
+   ex:[['Hunt','Hund','verlängern'],['Heuser','Häuser','ableiten'],['Fogel','Vogel','merken']]}}
+];
+/* ---------- Erweiterung: Symbole, neue Lektionen, Prüfungen ---------- */
+// Eigene Strategie-Symbole in der Logik der FRESCH-Methode: Silbenbögen, Weiterschwingen, Ableiten (Herkunftspfeil), Merkwort
+ICO.sw=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7C3 19 12 19 12 12C12 19 21 19 21 7"/></svg>`;
+ICO.vl=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9C3 18 12 18 12 12C12 10.5 13 10.5 14.5 10.5H20"/><path d="M16.5 6.5 21 10.5 16.5 14.5"/></svg>`;
+ICO.ab=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 1.5 7 11.5h9L12 20"/><path d="M8.2 16.2 12 21.8l4.8-4.6"/></svg>`;
+ICO.mk=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 20V4l7 9 7-9v16"/></svg>`;
+const TX=(s,fs)=>`<svg viewBox="0 0 24 24"><text x="12" y="${fs>14?19:16.5}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="currentColor" font-family="Baloo 2,sans-serif">${s}</text></svg>`;
+ICO.fw=TX('EN',12);ICO.ff=TX('FR',12);ICO.fg=TX('φ',21);
+ICO.ed=`<svg viewBox="0 0 24 24" ${PA}><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg>`;
+STRAT.push({n:'Groß/klein',a:'Nomen erkennen',c:'--primary',i:'gr',t:'Nomen schreibst du groß. Probe: Kannst du der, die oder das davorsetzen? Verben und Adjektive schreibst du klein.',e:'der Hund · wir spielen · ein roter Ball'});
+GROUPS.length=0;
+GROUPS.push({t:'Vier Strategien',s:'Die Werkzeuge der Wortdetektive',c:'--s0'},{t:'Besondere Regeln',s:'ss oder ß? Groß oder klein?',c:'--s2'},
+ {t:'Knifflige Wörter',s:'Fremdwörter und eingedeutschte Wörter',c:'--s3'},{t:'Wörter trennen',s:'Wo darf ein Wort am Zeilenende getrennt werden?',c:'--s1'},
+ {t:'Detektiv-Prüfungen',s:'Jede Prüfung ist schwerer als die davor',c:'--primary'});
+UNITS.splice(UNITS.findIndex(u=>u.id==='mx'),1);
+UNITS.forEach(u=>{if(u.id==='t1'||u.id==='t2')u.g=3;if(u.id==='gr')u.st=4});
+UNITS.push(
+ {id:'fw',g:2,t:'Fremdwörter',s:'Clown, Computer, Handy',c:'--s1',i:'fw',st:-1,
+  tip:'Fremdwörter kannst du oft nicht herleiten. Überlege, aus welcher Sprache das Wort kommt, und präge dir die schwierige Stelle ein.',
+  learn:{lead:'Viele Wörter kommen aus anderen Sprachen und werden anders geschrieben, als man sie spricht. Hier brauchst du ein gutes Auge.',
+   rules:['Englische Wörter: Clown, Computer, Handy, Jeans. Sie klingen oft anders, als sie geschrieben werden.','Italienische Wörter: Pizza mit zz, das klingt wie tz.','Präge dir die schwierige Stelle ein: Färbe sie, decke das Wort zu und schreibe es auf.'],
+   ex:[['Klaun','Clown','Cl am Anfang'],['Kompjuter','Computer','ein u in der Mitte'],['Hendy','Handy','y am Ende']]}},
+ {id:'ff',g:2,t:'Französische Wörter',s:'Garage, Ballon, Mayonnaise',c:'--s2',i:'ff',st:-1,
+  tip:'Französische Wörter schreibst du oft ganz anders, als du sie sprichst. Präge dir die besondere Stelle ein.',
+  learn:{lead:'Aus dem Französischen kommen viele Wörter, die wir ganz anders aussprechen, als sie geschrieben werden.',
+   rules:['Das Ende -age klingt wie asche: Garage, Etage.','Das Ende -on klingt durch die Nase: Ballon, Balkon, Bonbon.','ch klingt oft wie sch: Chef, Champignon.'],
+   ex:[['Garasche','Garage','Ende -age'],['Balkong','Balkon','Ende -on'],['Schef','Chef','ch wie sch']]}},
+ {id:'fg',g:2,t:'Griechische Wörter',s:'Chor, Theater, Rhythmus',c:'--s0',i:'fg',st:-1,
+  tip:'Griechische Wörter haben besondere Buchstaben: ch wie k, ph wie f, th wie t, rh wie r, y wie ü. Präge dir diese Stellen ein.',
+  learn:{lead:'Viele Wörter aus dem Griechischen haben besondere Buchstabenpaare, die du dir merken musst.',
+   rules:['ch klingt wie k: Chor, Echo, Chaos, Chemie.','ph klingt wie f: Alphabet, Physik. th klingt wie t: Theater, Apotheke.','rh klingt wie r: Rhythmus, Rhabarber. y klingt wie ü: Pyramide, Symbol.'],
+   ex:[['Kor','Chor','ch wie k'],['Teater','Theater','th wie t'],['Piramide','Pyramide','y wie ü']]}},
+ {id:'ed',g:2,t:'Eingedeutscht',s:'Zwei Schreibweisen sind richtig',c:'--s3',i:'ed',st:-1,
+  tip:'Manche Fremdwörter darfst du auch eingedeutscht schreiben. Dann sind zwei Schreibweisen richtig. Wähle alle richtigen aus.',
+  learn:{lead:'Bei manchen Fremdwörtern dürfen wir auch so schreiben, wie wir sprechen. Dann gibt es zwei richtige Schreibweisen.',
+   rules:['Joghurt oder Jogurt, Ketchup oder Ketschup: Beides ist erlaubt.','Mayonnaise oder Majonäse, Delfin oder Delphin: Beides ist erlaubt.','Aber nicht jede Schreibung ist erlaubt. Tippe immer alle richtigen an.'],
+   ex:[['Jochurt','Joghurt','oder Jogurt'],['Kechup','Ketchup','oder Ketschup'],['Majonese','Majonäse','oder Mayonnaise']]}},
+ {id:'mx1',g:4,t:'Prüfung 1: Spürnase',s:'10 Fälle zum Anwärmen',c:'--s0',i:'fin',st:-1,tip:'Welche Strategie hilft? Schwingen, Verlängern, Ableiten oder Merken?',
+  learn:{lead:'Die erste Prüfung ist leicht. Du wählst die richtige Schreibweise oder die passende Strategie aus.',rules:['Lies jedes Wort genau.','Überlege, welche Strategie passt.','Kontrolliere, bevor du auf Prüfen tippst.'],ex:[['Hunt','Hund','verlängern'],['Heuser','Häuser','ableiten'],['Fogel','Vogel','merken']]}},
+ {id:'mx2',g:4,t:'Prüfung 2: Fährtenleser',s:'12 Fälle, auch zum Tippen',c:'--s2',i:'fin',st:-1,tip:'Finde zuerst den Fehler. Überlege dann, welche Strategie dir hilft.',
+  learn:{lead:'Jetzt musst du auch Fehler in Sätzen finden und Wörter selbst schreiben.',rules:['Im Satz: Finde zuerst das falsche Wort.','Dann wählst du die richtige Schreibweise.','Beim Tippen schreibst du das Wort selbst richtig auf.'],ex:[['Der Hunt bellt.','Der Hund bellt.','Satz'],['Fogel','Vogel','tippen']]}},
+ {id:'mx3',g:4,t:'Prüfung 3: Kommissar',s:'15 knifflige Fälle',c:'--s1',i:'fin',st:-1,tip:'Hier musst du die Wörter selbst richtig schreiben. Nutze deine Strategien.',
+  learn:{lead:'Ab jetzt wird es ernst: Du schreibst die Wörter selbst, trennst Wörter und löst Fälle mit Fremdwörtern.',rules:['Du tippst die richtige Schreibweise selbst ein.','Du trennst Wörter und findest Fehler in Sätzen.','Fremdwörter und Strategien kommen gemischt vor.'],ex:[['Kompjuter','Computer','tippen'],['Fens-ter','Fens-ter','trennen']]}},
+ {id:'mx4',g:4,t:'Prüfung 4: Meisterdetektiv',s:'20 Fälle, das große Finale',c:'--s3',i:'fin',st:-1,tip:'Das ist die schwerste Prüfung. Denke an alle Strategien und an die Regeln für Fremdwörter.',
+  learn:{lead:'Das ist die Meisterprüfung. Sie hat die meisten Fälle und enthält alles, was du gelernt hast, auch eingedeutschte Wörter.',rules:['Alle Aufgaben musst du selbst schreiben, trennen oder auswählen.','Bei eingedeutschten Wörtern kann mehr als eine Antwort richtig sein.','Ruhig bleiben und jeden Fall genau lesen.'],ex:[['Majonese','Mayonnaise','oder Majonäse']]}}
+);
+UNITS.sort((a,b)=>a.g-b.g);
+const BASIS=['sw','vl','ab','mk'];
+const EXAM={
+ mx1:{from:BASIS,types:['c','s'],n:10},
+ mx2:{from:[...BASIS,'sz','gr'],types:['c','t','f'],n:12},
+ mx3:{from:[...BASIS,'sz','gr','fw','ff','fg','t1','t2'],types:['t','f','p','s'],n:15,typed:true},
+ mx4:{from:[...BASIS,'sz','gr','fw','ff','fg','ed','t1','t2'],types:['t','f','p','m'],n:20,typed:true}
+};
+
+/* ---------- Aufgaben-Bausteine ---------- */
+// C = Wort auswählen, T = Fehler im Wort verbessern (tippen), F = Fehler im Satz finden, S = Strategie wählen, P = Wort trennen
+const C=(r,w,k=3)=>({t:'c',a:r,o:[r,...w],k});
+const T=(w,r,k=3)=>({t:'t',w,a:r,k});
+const F=(s,w,r,x=[],k=3,e='')=>({t:'f',s,w,a:r,o:[r,w,...x],k,e});
+const S=(w,i,k=3)=>({t:'s',w,a:i,k});
+const P=(w,k=3)=>({t:'p',w,k});
+/* Erklärungen nach richtigem Wort */
+const W={
+ schwimmen:'schwim-men: Der Selbstlaut i ist kurz, darum folgt ein doppeltes m.',Sonne:'Son-ne: kurzes o, darum nn.',Kanne:'Kan-ne: kurzes a, darum nn.',
+ backen:'ba-cken: Statt kk schreibst du ck.',Katze:'Kat-ze: Statt zz schreibst du tz.',Zucker:'Zu-cker: Statt kk schreibst du ck.',
+ Mutter:'Mut-ter: kurzes u, darum tt.',Puppe:'Pup-pe: kurzes u, darum pp.',kommen:'kom-men: kurzes o, darum mm.',Brille:'Bril-le: kurzes i, darum ll.',
+ Mücke:'Mü-cke: Statt kk schreibst du ck.',Tasse:'Tas-se: kurzes a, darum ss.',Spinne:'Spin-ne: kurzes i, darum nn.',Wetter:'Wet-ter: kurzes e, darum tt.',
+ Brücke:'Brü-cke: Statt kk schreibst du ck.',Platz:'Am Ende schreibst du tz, nicht z.',Kaffee:'Kaf-fee: kurzes a, darum ff. Das ee am Ende musst du dir merken.',
+ Rücksicht:'Rück-sicht: Statt kk schreibst du ck.',Trommel:'Trom-mel: kurzes o, darum mm.',Schmetterling:'Schmet-ter-ling: kurzes e, darum tt.',
+ Löffel:'Löf-fel: kurzes ö, darum ff.',Wettbewerb:'Wett-be-werb: Wette, darum tt. Am Ende hörst du b bei der Mehrzahl: Wettbewerbe.',
+ Hund:'Verlängere: die Hunde. Du hörst ein d.',Korb:'Verlängere: die Körbe. Du hörst ein b.',Berg:'Verlängere: die Berge. Du hörst ein g.',
+ Kind:'Verlängere: die Kinder. Du hörst ein d.',Tag:'Verlängere: die Tage. Du hörst ein g.',Wald:'Verlängere: die Wälder. Du hörst ein d.',
+ Bild:'Verlängere: die Bilder. Du hörst ein d.',Zug:'Verlängere: die Züge. Du hörst ein g.',Hand:'Verlängere: die Hände. Du hörst ein d.',
+ lieb:'Stelle ein Nomen dazu: das liebe Kind. Du hörst ein b.',rund:'Stelle ein Nomen dazu: die runde Kugel. Du hörst ein d.',
+ gelb:'Stelle ein Nomen dazu: die gelbe Blume. Du hörst ein b.',sagt:'Bilde die Grundform: sagen. Du hörst ein g.',Weg:'Verlängere: die Wege. Du hörst ein g.',
+ mutig:'Stelle ein Nomen dazu: ein mutiger Junge. Du hörst ein g.',lustig:'Stelle ein Nomen dazu: ein lustiger Clown. Du hörst ein g.',
+ lebt:'Bilde die Grundform: leben. Du hörst ein b.',liegt:'Bilde die Grundform: liegen. Du hörst ein g.',Dieb:'Verlängere: die Diebe. Du hörst ein b.',
+ Bäume:'Ableiten: Baum → Bäume. Aus au wird äu.',Häuser:'Ableiten: Haus → Häuser. Aus au wird äu.',Mäuse:'Ableiten: Maus → Mäuse. Aus au wird äu.',
+ Äpfel:'Ableiten: Apfel → Äpfel. Aus a wird ä.',Hände:'Ableiten: Hand → Hände. Aus a wird ä.',Gärten:'Ableiten: Garten → Gärten. Aus a wird ä.',
+ Länder:'Ableiten: Land → Länder. Aus a wird ä.',Bälle:'Ableiten: Ball → Bälle. Aus a wird ä.',Träume:'Ableiten: Traum → Träume. Aus au wird äu.',
+ Wärme:'Ableiten: warm → Wärme. Aus a wird ä.',Eule:'Es gibt kein verwandtes Wort mit au, darum schreibst du eu.',
+ Feuer:'Es gibt kein verwandtes Wort mit au, darum schreibst du eu.',Freund:'Es gibt kein verwandtes Wort mit au, darum schreibst du eu.',
+ Bäcker:'Ableiten: backen → Bäcker. Aus a wird ä, und das ck bleibt.',Kälte:'Ableiten: kalt → Kälte. Aus a wird ä.',
+ läuft:'Ableiten: laufen → läuft. Aus au wird äu.',fährt:'Ableiten: fahren → fährt. Aus a wird ä, das h bleibt.',wäscht:'Ableiten: waschen → wäscht. Aus a wird ä.',
+ Vogel:'Merkwort: Der Laut f wird hier mit V geschrieben.',Vater:'Merkwort: Auch hier schreibst du V.',viel:'Merkwort mit V. fiel gehört zu fallen und ist ein anderes Wort.',
+ Zahn:'Merkwort mit Dehnungs-h.',Uhr:'Merkwort mit Dehnungs-h.',Meer:'Merkwort mit Doppel-e. mehr ist ein anderes Wort.',Boot:'Merkwort mit Doppel-o.',
+ Haar:'Merkwort mit Doppel-a.',Tier:'Merkwort: Das lange i schreibst du hier ie.',Biene:'Merkwort: Das lange i schreibst du hier ie.',
+ Spiegel:'Merkwort: ie, und am Anfang schreibst du sp, auch wenn du schp hörst.',Wiese:'Merkwort: Das lange i schreibst du hier ie.',
+ sehr:'Merkwort mit Dehnungs-h.',Schnee:'Merkwort mit Doppel-e.',Mehl:'Merkwort mit Dehnungs-h.',Kuh:'Merkwort mit Dehnungs-h.',
+ wohnen:'Merkwort mit Dehnungs-h.',Stuhl:'Merkwort mit Dehnungs-h.',Papier:'Merkwort: Pa-pier endet auf ie.',Familie:'Merkwort: Fa-mi-lie endet auf ie.',
+ Fahrrad:'Fahr-rad: fahren + Rad, darum zweimal r.',Vase:'Merkwort mit V.',Ferien:'Merkwort: Hier schreibst du F.',
+ Fluss:'Kurzes u: ss. Fluß ist die alte Schreibweise.',Fuß:'Langes u: ß.',Straße:'Langes a: ß.',Wasser:'Kurzes a: ss.',groß:'Langes o: ß.',
+ müssen:'Kurzes ü: ss.',heiß:'Doppellaut ei: ß.',Schloss:'Kurzes o: ss. Schloß ist die alte Schreibweise.',essen:'Kurzes e: ss.',
+ draußen:'Doppellaut au: ß.',Gruß:'Langes u: ß.',beißen:'Doppellaut ei: ß.',küssen:'Kurzes ü: ss.',Nuss:'Kurzes u: ss. Nuß ist die alte Schreibweise.',
+ Kuss:'Kurzes u: ss.',Fußball:'Fuß hat ein langes u, darum ß.',Schlüssel:'Kurzes ü: ss.',
+ dass:'dass mit ss ist ein Bindewort. Du kannst dieses, jenes oder welches nicht einsetzen.'
+};
+const ITEMS={
+sw:[
+ C('schwimmen',['schwimen','schwiemen']),C('Sonne',['Sone','Sohne']),C('Kanne',['Kane','Kahne']),C('backen',['bakken','baken']),
+ C('Katze',['Katse','Kaze']),C('Zucker',['Zuker','Zukker']),C('Mutter',['Muter','Mutta']),C('Puppe',['Pupe','Pubbe']),
+ C('kommen',['komen','kohmen']),C('Brille',['Brile','Briele']),C('Mücke',['Müke','Mükke']),C('Tasse',['Tase','Tasze']),
+ T('Spine','Spinne'),T('Weter','Wetter'),T('Brükke','Brücke'),T('Plaz','Platz'),T('Zuker','Zucker'),
+ F('Die Spine sitzt im Netz.','Spine','Spinne',['Spiene']),F('Wir baken einen Kuchen.','baken','backen',['bakken']),F('Mama trinkt Kafee.','Kafee','Kaffee',['Kaffe']),
+ S('Sonne',0),S('Mutter',0),S('backen',0),
+ C('Rücksicht',['Rüksicht','Rückzicht'],4),C('Trommel',['Tromel','Trommell'],4),C('Schmetterling',['Schmeterling','Schmettaling'],4),
+ C('Löffel',['Löfel','Löffell'],4),C('Wettbewerb',['Wetbewerb','Wettbewerp'],4),
+ F('Der Schmeterling fliegt davon.','Schmeterling','Schmetterling',['Schmettaling'],4),T('Tromel','Trommel',4)
+],
+vl:[
+ C('Hund',['Hunt','Hundt']),C('Korb',['Korp','Korpp']),C('Berg',['Berk','Perg']),C('Kind',['Kint','Kindt']),C('Tag',['Tak','Tack']),
+ C('Wald',['Walt','Waldt']),C('Bild',['Bilt','Bildt']),C('Zug',['Zuk','Zugg']),C('Hand',['Hant','Handt']),C('lieb',['liep','lip']),
+ C('rund',['runt','rundt']),C('gelb',['gelp','gelbb']),C('sagt',['sakt','sackt']),
+ T('Hunt','Hund'),T('Korp','Korb'),T('Berk','Berg'),T('Zuk','Zug'),T('Kint','Kind'),T('Wek','Weg'),
+ F('Der Hunt bellt laut.','Hunt','Hund',['Hundt']),F('Im Walt gibt es viele Pilze.','Walt','Wald',['Waldt']),
+ F('Die Maus knabbert am Korp.','Korp','Korb',['Korpp']),F('Das Kint spielt im Garten.','Kint','Kind',['Kindt']),
+ S('Hund',1),S('Korb',1),S('Berg',1),
+ C('mutig',['mutik','mutich'],4),C('lustig',['lustik','lustich'],4),C('lebt',['lept','lebbt'],4),C('liegt',['liekt','lieckt'],4),C('Dieb',['Diep','Diebb'],4),
+ F('Sie liekt im Bett.','liekt','liegt',['lieckt'],4),F('Der mutik Junge springt.','mutik','mutig',['mutich'],4),T('Diep','Dieb',4)
+],
+ab:[
+ C('Bäume',['Beume','Beime']),C('Häuser',['Heuser','Heiser']),C('Mäuse',['Meuse','Mäse']),C('Äpfel',['Epfel','Eppfel']),C('Hände',['Hende','Hennde']),
+ C('Gärten',['Gerten','Gärtten']),C('Länder',['Lender','Länner']),C('Bälle',['Belle','Bäle']),C('Träume',['Treume','Treime']),
+ C('Wärme',['Werme','Wärrme']),C('Eule',['Äule','Oile']),C('Feuer',['Fäuer','Foier']),C('Freund',['Fräund','Froind']),
+ T('Hende','Hände'),T('Beume','Bäume'),T('Heuser','Häuser'),T('Epfel','Äpfel'),
+ F('Die Heuser sind bunt.','Heuser','Häuser',['Heiser']),F('Im Garten wachsen Epfel.','Epfel','Äpfel',['Eppfel']),F('Die Meuse haben Hunger.','Meuse','Mäuse',['Meise']),
+ S('Häuser',2),S('Bäume',2),S('Hände',2),
+ C('Bäcker',['Bekker','Bäker'],4),C('Kälte',['Kelte','Kählte'],4),C('läuft',['leuft','läuf'],4),C('fährt',['fehrt','fäart'],4),C('wäscht',['wescht','wäsht'],4),
+ T('Kelte','Kälte',4),F('Der Bäker backt Brötchen.','Bäker','Bäcker',['Bekker'],4),F('Er leuft schnell.','leuft','läuft',['läuf'],4),F('Papa fehrt mit dem Auto.','fehrt','fährt',['fäart'],4)
+],
+mk:[
+ C('Vogel',['Fogel','Vochel']),C('Vater',['Fater','Vahter']),C('viel',['fiel','vil']),C('Zahn',['Zan','Zaan']),C('Uhr',['Ur','Uer']),
+ C('Meer',['Mer','Mehr']),C('Boot',['Bot','Booht']),C('Haar',['Har','Hahr']),C('Tier',['Tir','Tihr']),C('Biene',['Bine','Bihne']),
+ C('Spiegel',['Spigel','Schpiegel']),C('Wiese',['Wise','Wihse']),C('sehr',['ser','seer']),C('Schnee',['Schne','Schnehe']),
+ C('Mehl',['Mel','Meel']),C('Kuh',['Ku','Kuhe']),C('wohnen',['wonen','woonen']),C('Stuhl',['Stul','Stuhll']),
+ T('Fogel','Vogel'),T('Zan','Zahn'),T('Tir','Tier'),T('Bine','Biene'),T('Fater','Vater'),T('Mer','Meer'),
+ F('Der Fogel singt ein Lied.','Fogel','Vogel',['Vochel']),F('Der Zan tut weh.','Zan','Zahn',['Zaan']),F('Wir fahren ans Mer.','Mer','Meer',['Mehr']),
+ F('Die Bine summt im Garten.','Bine','Biene',['Bihne']),F('Mein Fater kocht Suppe.','Fater','Vater',['Vahter']),
+ S('Vogel',3),S('Meer',3),S('Zahn',3),
+ C('Papier',['Papir','Papihr'],4),C('Familie',['Famielie','Familje'],4),C('Fahrrad',['Farrad','Fahrad'],4),C('Vase',['Fase','Vahse'],4),C('Ferien',['Verien','Fehrien'],4),
+ T('Fahrad','Fahrrad',4),F('Das Papir ist weiß.','Papir','Papier',['Papihr'],4)
+],
+sz:[
+ C('Fluss',['Fluß','Flus']),C('Fuß',['Fuss','Fus']),C('Straße',['Strasse','Strase']),C('Wasser',['Waßer','Waser']),C('groß',['gross','gros']),
+ C('müssen',['müßen','müsen']),C('heiß',['heiss','heis']),C('Schloss',['Schlos','Schloß']),C('essen',['eßen','esen']),
+ C('draußen',['draussen','drausen']),C('Gruß',['Gruss','Grus']),C('beißen',['beissen','beisen']),C('küssen',['küßen','küsen']),
+ T('Fuss','Fuß'),T('Strasse','Straße'),T('Fluß','Fluss'),T('heiss','heiß'),
+ F('Der Fluß ist breit.','Fluß','Fluss',['Flus']),F('Die Strasse ist lang.','Strasse','Straße',['Strase']),
+ F('Der Gruss kam per Post.','Gruss','Gruß',['Grus']),F('Ich esse eine Nuß.','Nuß','Nuss',['Nus']),
+ C('Kuss',['Kus','Kuß'],4),C('Fußball',['Fussball','Fusball'],4),C('Schlüssel',['Schlüßel','Schlüsel'],4),
+ T('Fusball','Fußball',4),T('Schlüsel','Schlüssel',4),
+ F('Ich weiß, das es regnet.','das','dass',[],4),F('Mama sagt, das wir gehen müssen.','das','dass',[],4)
+],
+gr:[
+ F('Der hund bellt laut.','hund','Hund',[],3,'der Hund: Nomen, groß.'),F('Die katze schläft auf dem Sofa.','katze','Katze',[],3,'die Katze: Nomen, groß.'),
+ F('Mein Bruder spielt mit dem ball.','ball','Ball',[],3,'der Ball: Nomen, groß.'),F('Heute scheint die sonne.','sonne','Sonne',[],3,'die Sonne: Nomen, groß.'),
+ F('Im winter fällt Schnee.','winter','Winter',[],3,'der Winter: Nomen, groß.'),F('Die Kinder gehen in die schule.','schule','Schule',[],3,'die Schule: Nomen, groß.'),
+ F('Der Lehrer schreibt an die tafel.','tafel','Tafel',[],3,'die Tafel: Nomen, groß.'),F('Opa kocht eine leckere suppe.','suppe','Suppe',[],3,'die Suppe: Nomen, groß.'),
+ F('Wir Spielen im Garten.','Spielen','spielen',[],3,'spielen ist ein Verb (Tunwort): klein.'),F('Anna Liest ein Buch.','Liest','liest',[],3,'liest ist ein Verb: klein.'),
+ F('Ich Male ein Bild.','Male','male',[],3,'male ist ein Verb: klein.'),F('Das Mädchen Lacht laut.','Lacht','lacht',[],3,'lacht ist ein Verb: klein.'),
+ F('Der Apfel ist Rot.','Rot','rot',[],3,'rot ist ein Adjektiv (Wiewort): klein.'),F('Das Wetter ist Schön.','Schön','schön',[],3,'schön ist ein Adjektiv: klein.'),
+ F('Beim schwimmen hat Leon viel Spaß.','schwimmen','Schwimmen',[],4,'Nach beim wird das Verb zum Nomen: das Schwimmen.'),
+ F('Das lachen der Kinder ist schön.','lachen','Lachen',[],4,'Nach das wird das Verb zum Nomen: das Lachen.'),
+ F('Wir freuen uns auf das essen.','essen','Essen',[],4,'Nach das wird das Verb zum Nomen: das Essen.'),
+ F('Sie hat große freude am Lesen.','freude','Freude',[],4,'die Freude: Nomen, groß.'),
+ F('Mama kauft Brot, milch und Käse.','milch','Milch',[],4,'die Milch: Nomen, groß.'),
+ F('Zum geburtstag bekomme ich ein Fahrrad.','geburtstag','Geburtstag',[],4,'der Geburtstag: Nomen, groß.'),
+ F('Die Sonne scheint und wir Gehen schwimmen.','Gehen','gehen',[],4,'gehen ist ein Verb: klein.')
+],
+t1:[
+ P('Ho|se'),P('Ne|bel'),P('Ba|na|ne'),P('Blu|me'),P('Ap|fel'),P('Ti|ger'),P('Wol|ke'),P('Zei|tung'),P('Haus|tür'),P('Schul|ran|zen'),
+ P('Ru|he'),P('ge|hen'),P('se|hen'),P('Hand'),P('Baum'),P('Lö|we'),P('Scho|ko|la|de'),P('Mon|tag'),P('Kin|der'),P('Rei|se'),P('Eis|bär'),
+ P('Re|gen|bo|gen',4),P('Kin|der|gar|ten',4),P('Fuß|ball',4),P('Spiel|zeug',4),P('Fahr|rad',4),P('Son|nen|blu|me',4),P('Blei|stift',4),P('Ta|schen|lam|pe',4)
+],
+t2:[
+ P('ba|cken'),P('la|chen'),P('wa|schen'),P('Ta|sche'),P('Ku|chen'),P('Zu|cker'),P('Bä|cker'),P('Kat|ze'),P('Fens|ter'),P('Kas|ten'),
+ P('Wes|te'),P('Son|ne'),P('Kan|ne'),P('Mut|ter'),P('Ker|ze'),P('Pup|pe'),P('Fla|sche'),P('Mü|cke'),P('Kir|sche'),P('Mu|schel'),P('Müt|ze'),P('Bürs|te'),
+ P('Schmet|ter|ling',4),P('Wasch|ma|schi|ne',4),P('Zahn|bürs|te',4),P('Spiel|platz',4),P('Eich|hörn|chen',4),P('Ge|schich|te',4),P('Ge|schwis|ter',4),P('Früh|stück',4)
+]
+};
+/* ---------- Erweiterung der Aufgaben ---------- */
+const K4=a=>a.map(x=>({...x,k:4}));
+const M=(v,i,k=3,e='')=>({t:'m',v,i,k,e});
+Object.assign(W,{
+ Schlitten:'Schlit-ten: kurzes i, darum tt.',Bagger:'Bag-ger: kurzes a, darum gg.',Kartoffel:'Kar-tof-fel: kurzes o, darum ff.',Teppich:'Tep-pich: kurzes e, darum pp.',
+ Kissen:'Kis-sen: kurzes i, darum ss.',Quelle:'Quel-le: kurzes e, darum ll. Für kw schreibst du qu.',Ellbogen:'Ell-bo-gen: Elle und Bogen, darum ll.',
+ Kuckuck:'Ku-ckuck: Beide k schreibst du mit ck.',Zwillinge:'Zwil-lin-ge: kurzes i, darum ll.',Mittwoch:'Mitt-woch: Mitte der Woche, darum tt.',Zettel:'Zet-tel: kurzes e, darum tt.',
+ Zwerg:'Verlängere: die Zwerge. Du hörst ein g.',Hemd:'Verlängere: die Hemden. Du hörst ein d.',Geld:'Verlängere: die Gelder. Du hörst ein d.',
+ Pferd:'Verlängere: die Pferde. Du hörst ein d.',Mond:'Verlängere: die Monde. Du hörst ein d.',Sieb:'Verlängere: die Siebe. Du hörst ein b.',
+ bleibt:'Bilde die Grundform: bleiben. Du hörst ein b.',schreibt:'Bilde die Grundform: schreiben. Du hörst ein b.',fliegt:'Bilde die Grundform: fliegen. Du hörst ein g.',
+ blind:'Stelle ein Nomen dazu: der blinde Mann. Du hörst ein d.',klug:'Stelle ein Nomen dazu: ein kluges Kind. Du hörst ein g.',Strand:'Verlängere: die Strände. Du hörst ein d.'
+});
+ITEMS.sw.push(...K4([
+ C('Schlitten',['Schliten','Schlitenn']),C('Bagger',['Bager','Bagga']),C('Kartoffel',['Kartofel','Kartoffell']),C('Teppich',['Tepich','Teppig']),
+ C('Kissen',['Kisen','Kiessen']),C('Quelle',['Quele','Kwelle']),C('Ellbogen',['Elbogen','Ellbogenn']),C('Kuckuck',['Kukuk','Kuckuk']),
+ C('Zwillinge',['Zwilinge','Zwillinke']),C('Mittwoch',['Mitwoch','Mittwog']),
+ T('Kartofel','Kartoffel'),T('Schliten','Schlitten'),T('Zetel','Zettel'),
+ F('Im Tepich ist ein Fleck.','Tepich','Teppich',['Teppig']),F('Am Mitwoch schreiben wir einen Test.','Mitwoch','Mittwoch',['Mittwog']),
+ F('Der Kuckuk ruft im Wald.','Kuckuk','Kuckuck',['Kukuk']),S('Kartoffel',0),S('Teppich',0),S('Zettel',0)
+]));
+ITEMS.vl.push(...K4([
+ C('Zwerg',['Zwerk','Zwerch']),C('Hemd',['Hemt','Hämd']),C('Geld',['Gelt','Geldt']),C('Pferd',['Pfert','Pferdt']),C('Mond',['Mont','Mondt']),
+ C('Sieb',['Siep','Siebb']),C('bleibt',['bleipt','bleibd']),C('schreibt',['schreipt','schreibd']),C('fliegt',['fliekt','flieckt']),
+ C('blind',['blint','blindt']),C('klug',['kluk','klugg']),C('Strand',['Strant','Strandt']),
+ T('Pfert','Pferd'),T('Mont','Mond'),T('blint','blind'),T('Hemt','Hemd'),T('Zwerk','Zwerg'),T('Gelt','Geld'),T('Siep','Sieb'),
+ F('Mein Bruder schreipt eine Karte.','schreipt','schreibt',['schreibd']),F('Der Mont scheint hell.','Mont','Mond',['Mondt']),
+ F('Das Pfert galoppiert über die Wiese.','Pfert','Pferd',['Pferdt']),F('Der Zwerk hat eine rote Mütze.','Zwerk','Zwerg',['Zwerch']),
+ F('Ein Vogel fliekt über das Haus.','fliekt','fliegt',['flieckt']),S('Pferd',1),S('Mond',1)
+]));
+Object.assign(W,{
+ Gläser:'Ableiten: Glas → Gläser. Aus a wird ä.',Fäden:'Ableiten: Faden → Fäden. Aus a wird ä.',Väter:'Ableiten: Vater → Väter. Aus a wird ä.',
+ Zähne:'Ableiten: Zahn → Zähne. Aus a wird ä, das h bleibt.',Städte:'Ableiten: Stadt → Städte. Aus a wird ä.',Wände:'Ableiten: Wand → Wände. Aus a wird ä.',
+ Bänke:'Ableiten: Bank → Bänke. Aus a wird ä.',Äste:'Ableiten: Ast → Äste. Aus a wird ä.',Hähne:'Ableiten: Hahn → Hähne. Aus a wird ä.',
+ Läuse:'Ableiten: Laus → Läuse. Aus au wird äu.',träumen:'Ableiten: Traum → träumen. Aus au wird äu.',zählen:'Ableiten: Zahl → zählen. Aus a wird ä.',
+ erzählen:'Ableiten: Zahl → erzählen. Aus a wird ä.',erzählt:'Ableiten: Zahl → erzählt. Aus a wird ä.',Gebäude:'Ableiten: bauen → Gebäude. Aus au wird äu.',
+ Verkäufer:'Ableiten: verkaufen → Verkäufer. Aus au wird äu.',
+ Vampir:'Merkwort: Das V klingt hier wie w.',Klavier:'Merkwort: Das V klingt hier wie w. Am Ende steht ier.',Vulkan:'Merkwort: Das V klingt hier wie w.',
+ Verkehr:'Merkwort: Vorsilbe ver- und ehr mit Dehnungs-h.',Vorsicht:'Merkwort: Vorsilbe vor- mit V.',Maschine:'Merkwort: Hier schreibst du ein einfaches i, obwohl es lang klingt.',
+ Fieber:'Merkwort: Das lange i schreibst du hier ie.',Krokodil:'Merkwort: Hier schreibst du ein einfaches i, obwohl es lang klingt.',Lehrer:'Merkwort mit Dehnungs-h.',
+ Sahne:'Merkwort mit Dehnungs-h.',Kohle:'Merkwort mit Dehnungs-h.',Bohne:'Merkwort mit Dehnungs-h.',Gefahr:'Merkwort mit Dehnungs-h.',
+ Papagei:'Merkwort: Am Ende steht ei.',Mahlzeit:'Merkwort mit Dehnungs-h.'
+});
+ITEMS.ab.push(...K4([
+ C('Gläser',['Gleser','Gläzer']),C('Fäden',['Feden','Fäder']),C('Väter',['Veter','Vähter']),C('Zähne',['Zehne','Zähnä']),C('Städte',['Stette','Stedte']),
+ C('Wände',['Wende','Wäne']),C('Bänke',['Benke','Bänkke']),C('Äste',['Este','Äßte']),C('Hähne',['Hehne','Hänne']),C('Läuse',['Leuse','Läse']),
+ C('träumen',['treumen','träuhmen']),C('zählen',['zehlen','zälen']),C('erzählen',['erzehlen','erzälen']),C('Gebäude',['Gebeude','Gebäute']),C('Verkäufer',['Verkeufer','Verkäufa']),
+ T('Gleser','Gläser'),T('Zehne','Zähne'),T('Veter','Väter'),T('Gebeude','Gebäude'),
+ F('Mein Opa erzehlt eine Geschichte.','erzehlt','erzählt',['erzälht']),F('Das neue Gebeude ist sehr hoch.','Gebeude','Gebäude',['Gebäute']),
+ F('Die Gleser stehen im Schrank.','Gleser','Gläser',['Gläzer']),F('Der Verkeufer wiegt die Äpfel ab.','Verkeufer','Verkäufer',['Verkäufa']),
+ F('Vier Benke stehen im Park.','Benke','Bänke',['Bänkke']),S('Gläser',2),S('Väter',2),S('Zähne',2)
+]));
+ITEMS.mk.push(...K4([
+ C('Vampir',['Wampir','Fampir']),C('Klavier',['Clavier','Klawier']),C('Vulkan',['Wulkan','Fulkan']),C('Verkehr',['Ferkehr','Verkeer']),C('Vorsicht',['Forsicht','Vorsischt']),
+ C('Maschine',['Maschiene','Mashine']),C('Fieber',['Fiber','Fiebar']),C('Krokodil',['Krokodiel','Crocodil']),C('Lehrer',['Lerer','Lehrehr']),C('Sahne',['Sane','Saahne']),
+ C('Kohle',['Kole','Koohle']),C('Bohne',['Bone','Boohne']),C('Gefahr',['Gefar','Gefaar']),C('Papagei',['Papagai','Papagej']),C('Mahlzeit',['Malzeit','Mahlzeid']),
+ T('Wampir','Vampir'),T('Wulkan','Vulkan'),T('Sane','Sahne'),T('Fiber','Fieber'),T('Kole','Kohle'),
+ F('Der Wulkan spuckt Feuer.','Wulkan','Vulkan',['Fulkan']),F('Ich spiele Klawier.','Klawier','Klavier',['Clavier']),
+ F('Das Krokodiel hat scharfe Zähne.','Krokodiel','Krokodil',['Crocodil']),F('Lena hat Fiber und bleibt im Bett.','Fiber','Fieber',['Fiebar']),
+ S('Vulkan',3),S('Klavier',3)
+]));
+Object.assign(W,{
+ Gebiss:'Kurzes i: ss. Gebiß ist die alte Schreibweise.',Missgeschick:'Das Wort beginnt mit miss- (kurzes i): ss.',Fußboden:'Fuß hat ein langes u, darum ß. Dazu kommt Boden.',
+ Spaß:'Langes a: ß.',Biss:'Kurzes i: ss.',Riss:'Kurzes i: ss.',Schweiß:'Doppellaut ei: ß.',Strauß:'Doppellaut au: ß.',Fleiß:'Doppellaut ei: ß.',
+ weiß:'Doppellaut ei: ß.',außen:'Doppellaut au: ß.',Klasse:'Kurzes a: ss.',Fass:'Kurzes a: ss.',Genuss:'Kurzes u: ss.'
+});
+ITEMS.sz.push(...K4([
+ C('Gebiss',['Gebis','Gebiß']),C('Missgeschick',['Misgeschick','Mißgeschick']),C('Fußboden',['Fussboden','Fusboden']),C('Spaß',['Spass','Spas']),
+ C('Biss',['Bis','Biß']),C('Riss',['Ris','Riß']),C('Schweiß',['Schweiss','Schweis']),C('Strauß',['Strauss','Straus']),C('Fleiß',['Fleiss','Fleis']),
+ C('weiß',['weiss','weis']),C('außen',['aussen','ausen']),C('Klasse',['Klase','Klaße']),C('Fass',['Fas','Faß']),C('Genuss',['Genus','Genuß']),
+ T('Spas','Spaß'),T('Klase','Klasse'),T('Strauss','Strauß'),T('Gebis','Gebiss'),T('Fusboden','Fußboden'),T('Fleiss','Fleiß'),
+ F('Wir haben viel Spas gehabt.','Spas','Spaß',['Spass']),F('Der Strauss ist ein großer Vogel.','Strauss','Strauß',['Straus']),
+ F('Wir gehen in die Klase.','Klase','Klasse',['Klaße']),F('Mein Fuss tut weh.','Fuss','Fuß',['Fus']),
+ F('Dass Wetter ist heute schön.','Dass','Das',[],4,'Das ist hier ein Artikel (das Wetter). Artikel schreibst du mit einem s.'),
+ F('Ich hoffe, das alles gut geht.','das','dass')
+]));
+ITEMS.gr.push(
+ F('Der vogel singt ein Lied.','vogel','Vogel',[],3,'der Vogel: Nomen, groß.'),F('Mama kauft einen apfel.','apfel','Apfel',[],3,'der Apfel: Nomen, groß.'),
+ F('Im sommer gehen wir schwimmen.','sommer','Sommer',[],3,'der Sommer: Nomen, groß.'),F('Das Auto fährt Schnell.','Schnell','schnell',[],3,'schnell ist ein Adjektiv: klein.'),
+ F('Die Blume Blüht im Beet.','Blüht','blüht',[],3,'blüht ist ein Verb: klein.'),F('Unser lehrer ist nett.','lehrer','Lehrer',[],3,'der Lehrer: Nomen, groß.')
+);
+ITEMS.gr.push(...K4([
+ F('Er wünscht sich etwas schönes.','schönes','Schönes',[],4,'Nach etwas wird das Adjektiv zum Nomen: etwas Schönes.'),
+ F('Wir haben nichts neues gehört.','neues','Neues',[],4,'Nach nichts wird das Adjektiv zum Nomen: nichts Neues.'),
+ F('Zum schlafen brauche ich mein Kuscheltier.','schlafen','Schlafen',[],4,'Nach zum wird das Verb zum Nomen: zum Schlafen.'),
+ F('Ich freue mich auf das wiedersehen.','wiedersehen','Wiedersehen',[],4,'Nach das wird das Verb zum Nomen: das Wiedersehen.'),
+ F('Im Zoo haben wir Affen und löwen gesehen.','löwen','Löwen',[],4,'die Löwen: Nomen, groß.'),
+ F('Gestern abend waren wir im Kino.','abend','Abend',[],4,'Nach gestern, heute oder morgen schreibst du die Tageszeit groß: gestern Abend.'),
+ F('Heute morgen scheint die Sonne.','morgen','Morgen',[],4,'Nach heute schreibst du die Tageszeit groß: heute Morgen.'),
+ F('Am montag habe ich Schule.','montag','Montag',[],4,'Wochentage sind Nomen: der Montag.'),
+ F('Im oktober fallen die Blätter.','oktober','Oktober',[],4,'Monate sind Nomen: der Oktober.'),
+ F('Lena wohnt in berlin.','berlin','Berlin',[],4,'Namen von Orten schreibst du groß.'),
+ F('Er ist ein Guter Freund.','Guter','guter',[],4,'guter ist ein Adjektiv: klein.'),
+ F('Wir sind Müde und gehen ins Bett.','Müde','müde',[],4,'müde ist ein Adjektiv: klein.'),
+ F('Das Kind weint Laut.','Laut','laut',[],4,'laut ist ein Adjektiv: klein.'),
+ F('Sie hat eine Rote Jacke an.','Rote','rote',[],4,'rote ist ein Adjektiv: klein.')
+]));
+ITEMS.t1.push(...K4([
+ P('Kro|ko|dil'),P('Wur|zel'),P('Ka|nin|chen'),P('Ge|schenk'),P('Ge|bäu|de'),P('Scho|ko|la|den|ku|chen'),P('Ge|burts|tag'),P('Spa|zier|gang'),
+ P('Wohn|zim|mer'),P('Kü|chen|tisch'),P('Haus|auf|ga|be'),P('Schul|hof'),P('Bü|cher|re|gal'),P('Ei|sen|bahn'),P('Hun|de|hüt|te'),
+ P('Ap|fel|baum'),P('Kar|tof|fel|sup|pe'),P('Mu|sik|un|ter|richt')
+]));
+ITEMS.t2.push(...K4([
+ P('Kätz|chen'),P('Mäd|chen'),P('Würst|chen'),P('Pup|pen|haus'),P('Brief|kas|ten'),P('Hams|ter|kä|fig'),P('Win|ter|müt|ze'),
+ P('Fens|ter|bank'),P('Fi|scher|boot'),P('Tisch|ten|nis'),P('Bä|cke|rei'),P('Zu|cker|rü|be')
+]));
+Object.assign(W,{
+ Clown:'Englisches Wort: Cl am Anfang und own am Ende.',Computer:'Englisches Wort: Com-pu-ter, mit u und er am Ende.',Handy:'Englisches Wort: Hand ohne t, am Ende ein y.',
+ Pizza:'Italienisches Wort: zz klingt wie tz.',Jeans:'Englisches Wort: J am Anfang, dann ea.',Baby:'Englisches Wort: Am Ende steht y.',Cowboy:'Englisches Wort: Cow und boy.',
+ Teddy:'Englisches Wort: dd und y am Ende.',Pullover:'Englisches Wort: Pull-over, mit ll.',Joghurt:'Merkwort: Hier schreibst du gh.',Ketchup:'Englisches Wort: tch und up am Ende.',
+ Orange:'Französisches Wort: Hier schreibst du ge am Ende.',Zirkus:'Merkwort: Hier schreibst du Z und k.',Konzert:'Merkwort: Hier schreibst du K und z.',
+ Sofa:'Merkwort: Hier schreibst du S und nur ein f.',Hotel:'Merkwort: Hier schreibst du nur ein l.',Chef:'Französisches Wort: ch klingt wie sch.',
+ Skateboard:'Englisches Wort: Skate und board, am Ende d.',Shampoo:'Englisches Wort: sh am Anfang und oo am Ende.',Sandwich:'Englisches Wort: Am Ende steht wich.',
+ Training:'Englisches Wort: Trai-ning, mit ai.',Interview:'Englisches Wort: Inter und view.',Quiz:'Englisches Wort: qu am Anfang und z am Ende.',
+ Basketball:'Englisches Wort: Basket und ball, mit ll.',Jogging:'Englisches Wort: Hier schreibst du J und gg.',Comic:'Englisches Wort: C am Anfang und c am Ende.',
+ Chips:'Englisches Wort: ch klingt hier wie tsch.',Mountainbike:'Englisches Wort: Mountain und bike.',Cocktail:'Englisches Wort: Cock und tail.',
+ Online:'Englisches Wort: on und line.',Laptop:'Englisches Wort: Lap und top.',Internet:'Englisches Wort: Inter und net.',Smartphone:'Englisches Wort: Smart und phone.',
+ Cappuccino:'Italienisches Wort: pp und cc.',
+ Bonbon:'Französisches Wort: Zweimal bon, das n klingt durch die Nase.',Ballon:'Französisches Wort: Bal-lon, mit ll und on am Ende.',
+ Garage:'Französisches Wort: Das Ende -age klingt wie asche.',Pommes:'Französisches Wort: Pommes mit mm.',Cousin:'Französisches Wort: C am Anfang und sin am Ende.',
+ Bluse:'Merkwort: Hier schreibst du ein einfaches s.',Krawatte:'Französisches Wort: Kra-wat-te, mit w und tt.',Balkon:'Französisches Wort: Das Ende -on klingt durch die Nase.',
+ Etage:'Französisches Wort: Das Ende -age klingt wie asche.',Dusche:'Französisches Wort: Hier schreibst du sch.',Büro:'Französisches Wort: Hier schreibst du ü und nur ein r.',
+ Mayonnaise:'Französisches Wort: Mayonnaise mit y und nn. Erlaubt ist auch Majonäse.',Restaurant:'Französisches Wort: Das Ende -aurant klingt wie ang.',
+ Ballett:'Französisches Wort: Ballett mit ll und tt.',Souvenir:'Französisches Wort: sou am Anfang und enir am Ende.',Journalist:'Französisches Wort: jour am Anfang.',
+ Ingenieur:'Französisches Wort: Das Ende -ieur klingt wie ör.',Dessert:'Französisches Wort: Dessert mit ss.',Champignon:'Französisches Wort: ch klingt wie sch, am Ende steht gnon.',
+ Pyjama:'Merkwort: Hier schreibst du y und j.',Niveau:'Französisches Wort: Das Ende -eau klingt wie o.',Genie:'Französisches Wort: Hier schreibst du ie am Ende.',
+ Silhouette:'Französisches Wort: Sil-hou-et-te, mit tt.',Baguette:'Französisches Wort: gu und tt.',Croissant:'Französisches Wort: Cr am Anfang, oi in der Mitte.',Parkett:'Französisches Wort: Am Ende steht kett.'
+});
+ITEMS.fw=[
+ C('Clown',['Klaun','Clawn']),C('Computer',['Kompjuter','Computa']),C('Handy',['Hendy','Handi']),C('Pizza',['Pitza','Pizzza']),C('Jeans',['Dschins','Gins']),
+ C('Baby',['Beby','Babi']),C('Cowboy',['Kauboi','Cowboi']),C('Teddy',['Tedy','Teddi']),C('Pullover',['Pulower','Pullowa']),C('Joghurt',['Jochurt','Joghurd']),
+ C('Ketchup',['Ketchap','Kechup']),C('Orange',['Orrange','Oranche']),C('Zirkus',['Cirkus','Zirkuss']),C('Konzert',['Concert','Kontzert']),C('Sofa',['Sofah','Zofa']),
+ C('Hotel',['Hotell','Hothel']),C('Chef',['Schef','Sheff']),
+ T('Klaun','Clown'),T('Kompjuter','Computer'),T('Hendy','Handy'),T('Beby','Baby'),T('Dschins','Jeans'),T('Kauboi','Cowboy'),T('Tedy','Teddy'),T('Schef','Chef'),
+ F('Der Klaun lacht im Zirkus.','Klaun','Clown',['Clawn']),F('Ich spiele am Kompjuter.','Kompjuter','Computer',['Computa']),
+ F('Mein Hendy liegt auf dem Tisch.','Hendy','Handy',['Handi']),F('Das Beby schläft im Bett.','Beby','Baby',['Babi']),
+ F('Zum Frühstück esse ich Jochurt.','Jochurt','Joghurt',['Joghurd']),
+ ...K4([
+ C('Skateboard',['Skeitboard','Skateboart']),C('Shampoo',['Shampo','Shampoh']),C('Sandwich',['Sandwitsch','Sanwich']),C('Training',['Trening','Traning']),
+ C('Interview',['Intervju','Interwju']),C('Quiz',['Kwiz','Quitz']),C('Basketball',['Basketbal','Baskedball']),C('Jogging',['Dschogging','Joging']),
+ C('Comic',['Komik','Comik']),C('Chips',['Tschips','Schips']),C('Mountainbike',['Mauntainbike','Mountenbike']),C('Cocktail',['Kokteil','Cocktel']),
+ C('Online',['Onlein','Onlain']),C('Laptop',['Läptop','Lapptop']),C('Internet',['Inthernet','Internett']),C('Smartphone',['Smartfone','Smartphon']),
+ C('Cappuccino',['Kapuchino','Capucchino']),
+ T('Skeitboard','Skateboard'),T('Sandwitsch','Sandwich'),T('Trening','Training'),T('Intervju','Interview'),T('Kwiz','Quiz'),T('Tschips','Chips'),
+ T('Kokteil','Cocktail'),T('Onlein','Online'),T('Läptop','Laptop'),T('Komik','Comic'),T('Basketbal','Basketball'),
+ F('Am Wochenende fahre ich Skeitboard.','Skeitboard','Skateboard',['Skateboart']),F('Ich esse ein Sandwitsch.','Sandwitsch','Sandwich',['Sanwich']),
+ F('Das Trening beginnt um vier Uhr.','Trening','Training',['Traning']),F('Die Reporterin macht ein Intervju.','Intervju','Interview',['Interwju']),
+ F('Papa kauft Tschips für den Filmabend.','Tschips','Chips',['Schips']),F('Der Läptop steht auf dem Schreibtisch.','Läptop','Laptop',['Lapptop']),
+ F('Der neue Komik ist spannend.','Komik','Comic',['Comik']),F('Wir spielen ein lustiges Kwiz.','Kwiz','Quiz',['Quitz'])
+ ])
+];
+ITEMS.ff=[
+ C('Bonbon',['Bombon','Bonbonn']),C('Ballon',['Balon','Ballong']),C('Garage',['Garasche','Garaje']),C('Pommes',['Pomes','Pommess']),C('Cousin',['Kusäng','Cousain']),
+ C('Bluse',['Blusse','Bluhse']),C('Krawatte',['Krawate','Grawatte']),C('Balkon',['Balkong','Balcon']),C('Etage',['Etasche','Etaje']),C('Dusche',['Duche','Dushe']),
+ C('Büro',['Büroh','Bürro']),
+ T('Bombon','Bonbon'),T('Balon','Ballon'),T('Balkong','Balkon'),T('Garasche','Garage'),
+ F('Ich lutsche ein Bombon.','Bombon','Bonbon',['Bonbonn']),F('Das Auto steht in der Garasche.','Garasche','Garage',['Garaje']),
+ F('Der Balon fliegt in den Himmel.','Balon','Ballon',['Ballong']),F('Mein Kusäng wohnt in Köln.','Kusäng','Cousin',['Cousain']),
+ F('Zu den Pomes gibt es Ketchup.','Pomes','Pommes',['Pommess']),F('Wir haben einen Balkong.','Balkong','Balkon',['Balcon']),
+ ...K4([
+ C('Mayonnaise',['Majonese','Mayonese']),C('Restaurant',['Restorant','Restaurang']),C('Ballett',['Ballet','Balett']),C('Souvenir',['Suvenir','Souvenier']),
+ C('Journalist',['Jurnalist','Journalisd']),C('Ingenieur',['Inschenieur','Ingenör']),C('Dessert',['Desert','Dessärt']),C('Champignon',['Schampinjon','Champinjon']),
+ C('Pyjama',['Pijama','Pyschama']),C('Niveau',['Niveo','Nivau']),C('Genie',['Schenie','Genee']),C('Silhouette',['Silhouete','Silluette']),
+ C('Baguette',['Bagett','Baguete']),C('Croissant',['Kruasang','Croisant']),C('Parkett',['Parket','Parkätt']),
+ T('Majonese','Mayonnaise'),T('Restorant','Restaurant'),T('Suvenir','Souvenir'),T('Jurnalist','Journalist'),T('Desert','Dessert'),T('Pijama','Pyjama'),T('Bagett','Baguette'),
+ F('Zum Frühstück gibt es ein frisches Bagett.','Bagett','Baguette',['Baguete']),F('Wir essen im Restorant.','Restorant','Restaurant',['Restaurang']),
+ F('Der Jurnalist schreibt einen Bericht.','Jurnalist','Journalist',['Journalisd']),F('Zum Nachtisch gibt es ein Desert.','Desert','Dessert',['Dessärt']),
+ F('Ich trage einen blauen Pijama.','Pijama','Pyjama',['Pyschama']),F('Auf dem Brot ist Majonese.','Majonese','Mayonnaise',['Mayonese'])
+ ])
+];
+Object.assign(W,{
+ Chor:'Griechisches Wort: ch klingt wie k.',Echo:'Griechisches Wort: ch klingt wie k.',Theater:'Griechisches Wort: th klingt wie t.',Apotheke:'Griechisches Wort: th klingt wie t.',
+ Pyramide:'Griechisches Wort: y klingt wie ü.',Pyramiden:'Griechisches Wort: y klingt wie ü.',Alphabet:'Griechisches Wort: ph klingt wie f.',Mathe:'Kurzform von Mathematik: th klingt wie t.',
+ Schach:'Merkwort: Hier schreibst du sch und ach.',Biologie:'Griechisches Wort: Am Ende steht ie.',Technik:'Griechisches Wort: Hier schreibst du ch.',
+ Chaos:'Griechisches Wort: ch klingt wie k.',Rhythmus:'Griechisches Wort: rh klingt wie r, y klingt wie ü.',Orchester:'Griechisches Wort: ch klingt wie k.',
+ Rhabarber:'Griechisches Wort: rh klingt wie r.',Physik:'Griechisches Wort: ph klingt wie f, y klingt wie ü.',Chemie:'Merkwort: Hier schreibst du ch am Anfang.',
+ Charakter:'Griechisches Wort: ch klingt wie k.',Orchidee:'Griechisches Wort: ch klingt wie k.',Chamäleon:'Griechisches Wort: ch klingt wie k.',
+ Lexikon:'Griechisches Wort: Hier schreibst du x und k.',Gymnasium:'Griechisches Wort: y klingt wie ü.',Symbol:'Griechisches Wort: y klingt wie ü.',
+ System:'Griechisches Wort: y klingt wie ü.',Zylinder:'Griechisches Wort: y klingt wie ü.',Mythos:'Griechisches Wort: th klingt wie t, y klingt wie ü.'
+});
+ITEMS.fg=[
+ C('Chor',['Kor','Choor']),C('Echo',['Eco','Ecko']),C('Theater',['Teater','Theatar']),C('Apotheke',['Apoteke','Apotehke']),C('Pyramide',['Piramide','Pyramiede']),
+ C('Alphabet',['Alfabet','Alphabeth']),C('Mathe',['Mate','Mathä']),C('Schach',['Schak','Schack']),C('Biologie',['Biologi','Biolohgie']),C('Technik',['Teknik','Techink']),
+ T('Kor','Chor'),T('Teater','Theater'),T('Apoteke','Apotheke'),T('Piramide','Pyramide'),T('Alfabet','Alphabet'),T('Eco','Echo'),
+ F('Wir singen im Kor.','Kor','Chor',['Choor']),F('Ich kaufe Medizin in der Apoteke.','Apoteke','Apotheke',['Apotehke']),
+ F('Wir gehen ins Teater.','Teater','Theater',['Theatar']),F('In Ägypten stehen große Piramiden.','Piramiden','Pyramiden',['Pyramieden']),
+ ...K4([
+ C('Chaos',['Kaos','Chaoss']),C('Rhythmus',['Rytmus','Rhytmus']),C('Orchester',['Orkester','Orchestar']),C('Rhabarber',['Rabarber','Rharbarber']),
+ C('Physik',['Fysik','Phisik']),C('Chemie',['Kemie','Chemi']),C('Charakter',['Karakter','Charackter']),C('Orchidee',['Orkidee','Orchidehe']),
+ C('Chamäleon',['Kameleon','Chamelion']),C('Lexikon',['Lexicon','Lexikohn']),C('Gymnasium',['Gimnasium','Gymnasuim']),C('Symbol',['Simbol','Sümbol']),
+ C('System',['Sistem','Süstem']),C('Zylinder',['Cylinder','Zilinder']),C('Mythos',['Mitos','Mythus']),
+ T('Kaos','Chaos'),T('Rytmus','Rhythmus'),T('Orkester','Orchester'),T('Rabarber','Rhabarber'),T('Fysik','Physik'),T('Kemie','Chemie'),T('Karakter','Charakter'),
+ F('Im Orkester spielt eine Geige.','Orkester','Orchester',['Orchestar']),F('Zum Nachtisch gibt es Rabarber.','Rabarber','Rhabarber',['Rharbarber']),
+ F('Mein Lieblingsfach ist Kemie.','Kemie','Chemie',['Chemi']),F('Im Zimmer herrscht Kaos.','Kaos','Chaos',['Chaoss']),
+ F('Der Rytmus der Musik ist schnell.','Rytmus','Rhythmus',['Rhytmus']),F('Das Experiment in Fysik war spannend.','Fysik','Physik',['Phisik'])
+ ])
+];
+ITEMS.ed=[
+ M(['Joghurt','Jogurt'],['Joghurd']),M(['Ketchup','Ketschup'],['Kechup']),M(['Delfin','Delphin'],['Delfien']),M(['Spaghetti','Spagetti'],['Spagheti']),
+ M(['Panther','Panter'],['Pantter']),M(['Stopp','Stop'],['Stob']),
+ ...K4([
+ M(['Mayonnaise','Majonäse'],['Majonese','Mayonese']),M(['Portemonnaie','Portmonee'],['Portmonnä']),M(['Mikrofon','Mikrophon'],['Mikrofohn']),
+ M(['Geografie','Geographie'],['Geograffie']),M(['Orthografie','Orthographie'],['Orthograffie']),M(['Schampoo','Shampoo'],['Schampo']),
+ M(['Tunfisch','Thunfisch'],['Tunfich']),M(['Känguru'],['Känguruh','Kängeru'],4,'Nur Känguru ist richtig. Känguruh ist die alte Schreibweise.')
+ ])
+];
+for(const u in ITEMS) ITEMS[u].forEach(it=>it.u=u);
+
+/* ---------- Zustand ---------- */
+const KEY='wortdetektive-v1';
+const me={k:3,streak:0,last:'',sb:{3:{stars:{},xp:0},4:{stars:{},xp:0}},snd:true};
+try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);delete o.stars;delete o.xp;Object.assign(me,o)}}catch(e){}
+[3,4].forEach(k=>{const b=me.sb[k]=me.sb[k]||{};b.stars=b.stars||{};b.xp=b.xp||0});
+Object.defineProperty(me,'stars',{get(){return this.sb[this.k].stars}});
+Object.defineProperty(me,'xp',{get(){return this.sb[this.k].xp},set(v){this.sb[this.k].xp=v}});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(me))}catch(e){}};
+const app=document.getElementById('app');
+let V={n:'home',tab:'path'},Q=null,resetAsk=false;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const unlocked=()=>true; // alle Lektionen sind frei wählbar
+const sv=c=>`var(${c})`;
+const tag=n=>`<span class="tag" style="--c:${sv(STRAT[n].c)}">${ICO[STRAT[n].i]}${STRAT[n].n}</span>`;
+let ac=null;
+function beep(ok){if(!me.snd)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const seq=ok?[[660,0],[880,.1]]:[[240,0],[180,.12]];
+ seq.forEach(([f,t])=>{const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime+t;o.type=ok?'sine':'triangle';o.frequency.value=f;g.gain.setValueAtTime(.12,n);g.gain.exponentialRampToValueAtTime(.001,n+.18);o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+.2)})}catch(e){}}
+
+/* ---------- Startseite: Lernpfad ---------- */
+function home(){
+ const done=UNITS.filter(u=>(me.stars[u.id]||0)>0).length;
+ const msg=done===0?'Willkommen, Wortdetektiv! Löse deinen ersten Fall und sammle Sterne.':done===UNITS.length?'Alle Fälle gelöst. Du bist ein echter Wortdetektiv!':`${done} von ${UNITS.length} Fällen gelöst. Weiter so!`;
+ let h=`<div class="top"><div class="brand">${OWL()}<span>Wortdetektive</span></div><div class="chips"><span class="chip" title="Tage in Folge">${ICO.flame}${me.streak}</span><span class="chip" title="Punkte">${ICO.bolt}${me.xp}</span><button class="chip" data-act="snd" aria-pressed="${me.snd}">${me.snd?'Ton an':'Ton aus'}</button></div></div>`;
+ h+=`<div class="seg" role="group" aria-label="Klassenstufe"><button data-act="klasse" data-v="3" aria-pressed="${me.k===3}">Klasse 3</button><button data-act="klasse" data-v="4" aria-pressed="${me.k===4}">Klasse 4</button></div>`;
+ h+=`<div class="hello">${OWL()}<p><b>Hallo!</b>${msg}</p></div><div class="path">`;
+ const DX=[0,46,70,46,0,-46,-70,-46];let n=0;
+ const cur=UNITS.findIndex((u,i)=>unlocked(i)&&!(me.stars[u.id]>0));
+ GROUPS.forEach((g,gi)=>{
+  h+=`<div class="banner" style="background:${sv(g.c)};align-self:stretch"><div>${g.t}<small>${g.s}</small></div></div>`;
+  UNITS.forEach((u,i)=>{if(u.g!==gi)return;
+   const lk=!unlocked(i),s=me.stars[u.id]||0;
+   h+=`<div class="stop" style="--dx:${DX[n%DX.length]}px"><button class="node${lk?' locked':''}${i===cur?' current':''}" data-act="unit" data-i="${i}" style="--c:${sv(u.c)};--cd:color-mix(in srgb,${sv(u.c)} 62%,#000)" aria-label="${esc(u.t)}${lk?' (gesperrt)':''}">${lk?ICO.lock:ICO[u.i]}</button>`;
+   h+=`<div class="stars" aria-label="${s} von 3 Sternen">${s?[0,1,2].map(j=>star(j<s)).join(''):''}</div><div class="t">${u.t}</div><div class="s">${u.s}</div></div>`;n++;
+  });
+ });
+ return h+'</div>'+nav('path');
+}
+function nav(cur){return `<nav class="nav" aria-label="Hauptmenü"><div><button data-act="tab" data-v="path" ${cur==='path'?'aria-current="page"':''}>${ICO.path}Lernpfad</button><button data-act="tab" data-v="cheat" ${cur==='cheat'?'aria-current="page"':''}>${ICO.book}Spickzettel</button></div></nav>`}
+
+/* ---------- Lernkarte ---------- */
+function learn(){
+ const u=UNITS[V.i],L=u.learn;
+ let h=`<div class="lesson-top"><button class="x" data-act="home" aria-label="Zurück">×</button><div style="flex:1"></div>${u.st>=0?tag(u.st):''}</div>`;
+ h+=`<div class="card learn" style="border-color:${sv(u.c)}">${OWL('big-owl')}<h2>${u.t}</h2><p class="lead">${L.lead}</p>`;
+ h+=L.rules.map((r,j)=>`<div class="rule" style="--c:${sv(u.c)}"><b>${j+1}</b><span>${r}</span></div>`).join('');
+ h+=`<div class="ex">${L.ex.map(e=>`<div>${e[0]!==e[1]?`<em>${e[0]}</em> → `:''}<strong>${e[1]}</strong>${e[2]?`<small>${e[2]}</small>`:''}</div>`).join('')}</div></div>`;
+ h+=`<div class="fb"><div><button class="btn sun" data-act="start">Los geht's</button></div></div>`;
+ return h;
+}
+
+/* ---------- Spickzettel ---------- */
+function cheat(){
+ let h=`<div class="top"><div class="brand">${OWL()}<span>Spickzettel</span></div></div><div class="stack cheat">`;
+ h+=STRAT.map(s=>`<div class="card scard" style="--c:${sv(s.c)}"><h3>${ICO[s.i]}${s.n}</h3><p>${s.t}</p><p style="font-family:var(--f-display);font-weight:600;font-size:19px;margin-top:8px">${s.e}</p></div>`).join('');
+ h+=`<div class="card"><h3>Wörter trennen</h3><div class="rule" style="--c:var(--s1)"><b>1</b><span>Schwinge das Wort. Zwischen zwei Bögen darfst du trennen: Ho-se, Ba-na-ne.</span></div><div class="rule" style="--c:var(--s1)"><b>2</b><span>Ein einzelner Mitlaut kommt in die nächste Silbe: Ne-bel, Ru-he.</span></div><div class="rule" style="--c:var(--s1)"><b>3</b><span>ck, ch und sch bleiben zusammen: ba-cken, la-chen, Ta-sche.</span></div><div class="rule" style="--c:var(--s1)"><b>4</b><span>Bei mehreren Mitlauten kommt der letzte in die nächste Silbe: Kat-ze, Fens-ter, Mut-ter.</span></div><div class="rule" style="--c:var(--s1)"><b>5</b><span>Zusammengesetzte Wörter trennst du zuerst zwischen den Wörtern: Haus-tür.</span></div></div>`;
+ h+=`<div class="card"><h3>ss oder ß?</h3><p style="margin-top:6px">Kurzer Selbstlaut: <b>ss</b> (Fluss, Wasser). Langer Selbstlaut oder Doppellaut: <b>ß</b> (Fuß, Straße, heiß). Das Bindewort schreibst du <b>dass</b>.</p></div>`;
+ h+=`<div class="card"><h3>Knifflige Wörter</h3><p style="margin-top:6px">Bei Fremdwörtern hilft nur <b>Merken</b>: Clown, Computer, Mayonnaise. Griechische Wörter: <b>ph</b> klingt wie f (Physik), <b>th</b> wie t (Theater), <b>rh</b> wie r (Rhythmus), <b>ch</b> wie k (Chor). Manche Wörter dürfen zwei Schreibweisen haben: Jogurt oder Joghurt.</p></div>`;
+ h+=`<div class="card"><h3>Groß oder klein?</h3><p style="margin-top:6px">Nomen schreibst du groß. Probe: der, die oder das davor? Verben und Adjektive schreibst du klein.</p></div>`;
+ h+=`<div class="card"><h3>Für Eltern und Lehrkräfte</h3><p style="margin-top:6px;font-size:15px;color:var(--ink-soft)">Die vier Strategien gehen auf die FRESCH-Methode (Freiburger Rechtschreibschule) zurück und decken sich mit Mitsprechen, Ableiten und Einprägen aus den Bildungsstandards. Der Bildungsplan Baden-Württemberg setzt auf Rechtschreibstrategien und einen verbindlichen Grundwortschatz. Alle Wörter hier sind eine eigene Auswahl und nach der aktuellen amtlichen Rechtschreibung geschrieben. Falsche Schreibweisen kommen nur als Fehlerbeispiele vor.</p></div></div>`;
+ h+=`<p style="text-align:center;font-size:14px;margin:18px 0"><a href="datenschutz.html">Datenschutz</a> · <a href="impressum.html">Impressum</a></p>`;
+ h+=`<div class="reset"><button data-act="reset">${resetAsk?'Wirklich alles löschen? Tippe noch einmal.':'Fortschritt zurücksetzen'}</button></div>`;
+ return h+nav('cheat');
+}
+
+/* ---------- Ergebnis ---------- */
+function result(){
+ const R=V.r,u=UNITS[V.i];
+ let h=`<div class="center">${OWL('big-owl')}`;
+ if(R.ok){
+  h+=`<h2 style="margin-top:8px;font-size:32px">Fall gelöst!</h2><div class="res-stars">${[0,1,2].map(j=>star(j<R.stars).replace('<svg','<svg style="animation-delay:'+(j*.25)+'s" class="'+(j<R.stars?'pop':'')+'"')).join('')}</div>`;
+  h+=`<p style="color:var(--ink-soft)">${R.stars===3?'Fehlerfrei. Das war Detektivarbeit!':R.stars===2?'Sehr gut! Ein Fehler hat sich versteckt.':'Geschafft! Beim nächsten Mal klappt noch mehr.'}</p>`;
+  h+=`<div class="stats"><div class="card"><b>${R.good} von ${R.n}</b><span>richtig</span></div><div class="card"><b>+${R.xp}</b><span>Punkte</span></div></div>`;
+  h+=`<div class="stack"><button class="btn" data-act="home">Weiter</button><button class="btn ghost" data-act="start">Noch einmal üben</button></div>`;
+ }else{
+  h+=`<h2 style="margin-top:8px;font-size:30px">Fast geschafft!</h2><p style="color:var(--ink-soft);margin:8px 0 18px">Die Herzen sind leer. Lies die Lernkarte noch einmal und versuche es dann erneut.</p>`;
+  h+=`<div class="stack"><button class="btn sun" data-act="start">Noch einmal versuchen</button><button class="btn ghost" data-act="learn">Lernkarte ansehen</button><button class="btn ghost" data-act="home">Zum Lernpfad</button></div>`;
+ }
+ return h+'</div>';
+}
+/* ---------- Trennen: Hilfen ---------- */
+const COMP=new Set(['Haus|tür','Eis|bär','Fuß|ball','Spiel|zeug','Fahr|rad','Blei|stift','Spiel|platz','Früh|stück','Zahn|bürs|te','Schul|ran|zen','Re|gen|bo|gen','Kin|der|gar|ten','Son|nen|blu|me','Ta|schen|lam|pe','Wasch|ma|schi|ne','Eich|hörn|chen','Haus|auf|ga|be','Wohn|zim|mer','Kü|chen|tisch','Spa|zier|gang','Schul|hof','Bü|cher|re|gal','Ei|sen|bahn','Hun|de|hüt|te','Ap|fel|baum','Kar|tof|fel|sup|pe','Mu|sik|un|ter|richt','Ge|burts|tag','Scho|ko|la|den|ku|chen','Pup|pen|haus','Brief|kas|ten','Hams|ter|kä|fig','Win|ter|müt|ze','Tisch|ten|nis','Zu|cker|rü|be']);
+const VOW=/[aeiouäöüy]$/i;
+function parseP(w){const parts=w.split('|'),chars=Array.from(parts.join('')),cuts=new Set();let n=0;parts.slice(0,-1).forEach(p=>{n+=Array.from(p).length;cuts.add(n-1)});return{parts,chars,cuts}}
+function hyHints(w){
+ const {parts}=parseP(w);
+ if(parts.length===1)return 'Dieses Wort hat nur eine Silbe. Das trennst du nicht.';
+ if(COMP.has(w))return 'Zusammengesetzte Wörter trennst du zuerst zwischen den Wortbausteinen.';
+ const hs=[];
+ for(let i=0;i<parts.length-1;i++){const l=parts[i],r=parts[i+1];
+  if(/^(ck|ch|sch)/i.test(r))hs.push('ck, ch und sch bleiben zusammen.');
+  else if(/^h/.test(r)&&VOW.test(l))hs.push('Das h gehört zur nächsten Silbe.');
+  else if(l.slice(-1)===r[0])hs.push('Doppelte Mitlaute trennst du in der Mitte.');
+  else if(/s$/.test(l)&&/^t/.test(r))hs.push('Das st darfst du trennen.');
+  else if(/t$/.test(l)&&/^z/.test(r))hs.push('Das tz darfst du trennen.');
+  else if(VOW.test(l))hs.push('Ein einzelner Mitlaut kommt in die nächste Silbe.');
+  else hs.push('Bei mehreren Mitlauten kommt der letzte in die nächste Silbe.');
+ }
+ return [...new Set(hs)].slice(0,2).join(' ');
+}
+const strip=t=>t.replace(/[.,!?;:]+$/,'');
+const wrongIdx=it=>it.s.split(' ').findIndex(t=>strip(t)===it.w);
+const itemKey=it=>it.t==='s'||it.t==='p'?it.w:it.t==='m'?it.v[0]:it.a;
+
+/* ---------- Lektion ---------- */
+/* Prüfungen: Aufgabentypen abwechselnd mischen, in den schweren Prüfungen wird aus Auswählen ein Selbst-Tippen */
+function pickExam(u){
+ const E=EXAM[u.id];let pool=[];
+ E.from.forEach(id=>ITEMS[id].forEach(it=>{if(it.k===me.k)pool.push(it)}));
+ pool=shuffle(pool).map(it=>E.typed&&it.t==='c'?{t:'t',w:it.o[1+Math.floor(Math.random()*(it.o.length-1))],a:it.a,k:it.k,u:it.u}:it).filter(it=>E.types.includes(it.t));
+ const lists=E.types.map(ty=>pool.filter(it=>it.t===ty)),seen=new Set(),out=[];
+ for(let g=0;g<400&&out.length<E.n;g++){let any=false;
+  for(const L of lists){while(L.length){const it=L.shift(),k=itemKey(it);if(seen.has(k))continue;seen.add(k);out.push({...it});any=true;break}if(out.length>=E.n)break}
+  if(!any)break}
+ return shuffle(out);
+}
+function pick(u){
+ if(EXAM[u.id])return pickExam(u);
+ const N=20,pool=ITEMS[u.id];
+ const list=shuffle(pool.filter(x=>x.k===me.k));
+ const seen=new Set(),out=[];
+ for(const it of list){const k=itemKey(it);if(seen.has(k))continue;seen.add(k);out.push({...it});if(out.length===N)break}
+ if(out.length<N)for(const it of list){if(out.length>=N)break;if(!out.some(o=>o===it||(o.t===it.t&&itemKey(o)===itemKey(it))))out.push({...it})}
+ return shuffle(out);
+}
+const newS=it=>({stage:1,msel:new Set(),sel:null,tok:null,opt:null,val:'',tip:false,checked:false,ok:false,note:'',cuts:new Set(),opts:it.t==='c'||it.t==='f'?shuffle(it.o):it.t==='m'?shuffle([...it.v,...it.i]):[]});
+function startQuiz(i){const q=pick(UNITS[i]);Q={i,q,pos:0,hearts:3,good:0,n:q.length,s:newS(q[0])};V={n:'quiz'};render(true)}
+function check(){
+ const it=Q.q[Q.pos],s=Q.s;if(s.checked)return;
+ let ok=false;
+ if(it.t==='c'||it.t==='s')ok=s.sel===it.a;
+ else if(it.t==='t'){const v=s.val.trim();ok=v===it.a;if(!ok&&v.toLowerCase()===it.a.toLowerCase())s.note='Achte auf Groß- und Kleinschreibung. '}
+ else if(it.t==='f'){
+  if(s.stage===1&&s.tok===wrongIdx(it)){s.stage=2;beep(true);render(false);return}
+  ok=s.stage===2&&s.opt===it.a}
+ else if(it.t==='m')ok=it.v.length===s.msel.size&&it.v.every(x=>s.msel.has(x));
+ else{const {cuts}=parseP(it.w);ok=cuts.size===s.cuts.size&&[...cuts].every(c=>s.cuts.has(c))}
+ s.checked=true;s.ok=ok;
+ if(ok)Q.good++;else{Q.hearts--;if(!it._rq)Q.q.push({...it,_rq:1})}
+ beep(ok);render(false);
+}
+function next(){
+ if(Q.hearts<=0)return finish(false);
+ Q.pos++;
+ if(Q.pos>=Q.q.length)return finish(true);
+ Q.s=newS(Q.q[Q.pos]);render(true);
+}
+function finish(ok){
+ const u=UNITS[Q.i],stars=Q.hearts;let xp=0;
+ if(ok){xp=Q.good*10+stars*5;me.xp+=xp;me.stars[u.id]=Math.max(me.stars[u.id]||0,stars);
+  const t=dk(new Date());if(me.last!==t){const y=new Date();y.setDate(y.getDate()-1);me.streak=me.last===dk(y)?me.streak+1:1;me.last=t}save()}
+ V={n:'result',i:Q.i,r:{ok,stars,xp,good:Q.good,n:Q.n}};render(true);
+}
+function fbText(it){
+ if(it.t==='c'||it.t==='t')return{ans:it.a,ex:W[it.a]||''};
+ if(it.t==='f')return{ans:`${it.w} → ${it.a}`,ex:it.e||W[it.a]||''};
+ if(it.t==='s')return{ans:STRAT[it.a].n,ex:W[it.w]||''};
+ if(it.t==='m')return{ans:it.v.join(' und '),ex:it.e||'Fremdwörter dürfen oft auch eingedeutscht geschrieben werden. Alle anderen Schreibweisen sind Fehler.'};
+ return{ans:parseP(it.w).parts.join('-'),ex:hyHints(it.w)};
+}
+const PRAISE=['Richtig!','Super!','Stark!','Genau!','Gut erkannt!'];
+function body(it,s){
+ const c=s.checked,dis=c?'disabled':'';let h='';
+ if(it.t==='c'){
+  h+=`<div class="q">Wie schreibt man das Wort richtig?</div><div class="opts">`+s.opts.map(o=>`<button class="opt ${c?(o===it.a?'ok':o===s.sel?'no':''):''}" data-act="sel" data-v="${esc(o)}" aria-pressed="${s.sel===o}" ${dis}>${esc(o)}</button>`).join('')+`</div>`;
+ }else if(it.t==='t'){
+  h+=`<div class="q">Hier steckt ein Fehler. Schreibe das Wort richtig.</div><div class="wordbox">${esc(it.w)}</div><input id="ans" class="inp ${c?(s.ok?'ok':'no'):''}" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Richtige Schreibweise" value="${esc(s.val)}" ${c?'readonly':''}>`;
+ }else if(it.t==='f'){
+  const wi=wrongIdx(it);
+  h+=`<div class="q">${s.stage===2?'Gefunden! Wie schreibt man das Wort richtig?':'Finde den Fehler. Tippe auf das falsche Wort.'}</div><div class="sent">`+it.s.split(' ').map((t,j)=>`<button class="tok ${c||s.stage===2?(j===wi?'ok':j===s.tok?'no':''):''}" data-act="tok" data-v="${j}" aria-pressed="${s.tok===j}" ${dis||s.stage===2?'disabled':''}>${esc(t)}</button>`).join('')+`</div>`+(s.stage===2?`<div class="q" style="font-size:19px">So wird das Wort richtig geschrieben:</div><div class="opts">`+s.opts.map(o=>`<button class="opt sm ${c?(o===it.a?'ok':o===s.opt?'no':''):''}" data-act="opt" data-v="${esc(o)}" aria-pressed="${s.opt===o}" ${dis}>${esc(o)}</button>`).join('')+`</div>`:'');
+ }else if(it.t==='m'){
+  h+=`<div class="q">Welche Schreibweisen sind erlaubt? Tippe alle richtigen an.</div><div class="opts">`+s.opts.map(o=>`<button class="opt ${c?(it.v.includes(o)?'ok':s.msel.has(o)?'no':''):''}" data-act="mul" data-v="${esc(o)}" aria-pressed="${s.msel.has(o)}" ${dis}>${esc(o)}</button>`).join('')+`</div>`;
+ }else if(it.t==='s'){
+  h+=`<div class="q">Welche Strategie hilft dir bei diesem Wort?</div><div class="wordbox">${esc(it.w)}</div><div class="opts">`+STRAT.slice(0,4).map((x,j)=>`<button class="opt sm ${c?(j===it.a?'ok':j===s.sel?'no':''):''}" data-act="sel" data-v="${j}" aria-pressed="${s.sel===j}" ${dis}>${tag(j)}</button>`).join('')+`</div>`;
+ }else{
+  const {chars,cuts}=parseP(it.w),L=chars.length,fs=L<=7?40:L<=10?34:L<=12?28:24,gw=L<=7?20:L<=10?16:L<=12?12:10;
+  let g='';
+  chars.forEach((ch,j)=>{g+=`<span class="ltr">${esc(ch)}</span>`;
+   if(j<L-1){const on=s.cuts.has(j),k=c?(on&&cuts.has(j)?'ok':on?'no':cuts.has(j)?'miss':''):'';
+    g+=`<button class="gap ${k}" data-act="cut" data-v="${j}" aria-pressed="${on}" aria-label="Trennstelle nach Buchstabe ${j+1}" ${dis}></button>`}});
+  h+=`<div class="q">Wo darfst du das Wort trennen?</div><p style="color:var(--ink-soft);font-size:15px">Tippe zwischen die Buchstaben. Kann man das Wort nicht trennen, tippe gleich auf Prüfen.</p><div class="letters" style="--fs:${fs}px;--gw:${gw}px">${g}</div>`;
+ }
+ if(!c){const u=UNITS.find(x=>x.id===it.u)||UNITS[Q.i];
+  h+=`<div class="hint"><button class="btn ghost sm" data-act="tip">${s.tip?'Tipp ausblenden':'Tipp'}</button></div>`;
+  if(s.tip)h+=`<div class="tipbox">${u.st>=0?tag(u.st)+'<br>':''}${esc(u.tip)}</div>`}
+ return h;
+}
+function foot(it,s){
+ if(!s.checked){
+  const can=it.t==='c'||it.t==='s'?s.sel!==null:it.t==='t'?s.val.trim().length>0:it.t==='f'?(s.stage===2?s.opt!==null:s.tok!==null):it.t==='m'?s.msel.size>0:true;
+  return `<div class="fb"><div><button class="btn" id="chk" data-act="check" ${can?'':'disabled'}>Prüfen</button></div></div>`;
+ }
+ const {ans,ex}=fbText(it);
+ const pre=it.t==='f'&&s.tok!==wrongIdx(it)?`Der Fehler steckt in „${esc(it.w)}“. `:'';
+ const msg=s.ok?`<h3>${PRAISE[Q.pos%PRAISE.length]}</h3><p>${esc(ex)}</p>`:`<h3>Nicht ganz.</h3><p>${esc(s.note)}${pre}Richtig: <b>${esc(ans)}</b>. ${esc(ex)}</p>`;
+ return `<div class="fb ${s.ok?'ok':'no'}" role="status"><div>${msg}<button class="btn" data-act="next">${Q.hearts<=0?'Weiter':'Weiter'}</button></div></div>`;
+}
+function quiz(){
+ const it=Q.q[Q.pos],s=Q.s,pct=Math.min(100,Math.round(Q.good/Q.n*100));
+ return `<div class="lesson-top"><button class="x" data-act="home" aria-label="Lektion beenden">×</button><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div><div class="hearts" role="img" aria-label="${Q.hearts} von 3 Herzen">${[0,1,2].map(i=>heart(i<Q.hearts)).join('')}</div></div>`+body(it,s)+foot(it,s);
+}
+
+/* ---------- Anzeige & Ereignisse ---------- */
+function render(top){
+ app.innerHTML=V.n==='home'?(V.tab==='cheat'?cheat():home()):V.n==='learn'?learn():V.n==='quiz'?quiz():result();
+ if(top)window.scrollTo(0,0);
+ if(V.n==='quiz'&&!Q.s.checked&&Q.q[Q.pos].t==='t'){const a=document.getElementById('ans');if(a)a.focus({preventScroll:true})}
+}
+let tm;
+function toast(m){let t=document.getElementById('toast');
+ if(!t){t=document.createElement('div');t.id='toast';t.setAttribute('role','status');t.style.cssText='position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:14px;font-size:15px;z-index:20;max-width:90vw;text-align:center';document.body.appendChild(t)}
+ t.textContent=m;t.hidden=false;clearTimeout(tm);tm=setTimeout(()=>{t.hidden=true},2200);
+}
+app.addEventListener('click',e=>{
+ const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
+ const a=b.dataset.act,v=b.dataset.v,inQ=V.n==='quiz'&&Q,it=inQ?Q.q[Q.pos]:null;
+ if(inQ&&Q.s.checked&&a!=='next'&&a!=='home')return;
+ switch(a){
+  case 'klasse':me.k=Number(v);save();render(false);break;
+  case 'snd':me.snd=!me.snd;save();render(false);break;
+  case 'tab':V={n:'home',tab:v};resetAsk=false;render(true);break;
+  case 'home':V={n:'home',tab:'path'};Q=null;render(true);break;
+  case 'unit':{const i=Number(b.dataset.i);if(!unlocked(i)){toast('Löse zuerst den Fall davor.');break}V={n:'learn',i};render(true);break}
+  case 'learn':V={n:'learn',i:V.i};render(true);break;
+  case 'start':startQuiz(V.i);break;
+  case 'sel':Q.s.sel=it.t==='s'?Number(v):v;render(false);break;
+  case 'tok':Q.s.tok=Number(v);render(false);break;
+  case 'opt':Q.s.opt=v;render(false);break;
+  case 'mul':Q.s.msel.has(v)?Q.s.msel.delete(v):Q.s.msel.add(v);render(false);break;
+  case 'cut':{const j=Number(v);Q.s.cuts.has(j)?Q.s.cuts.delete(j):Q.s.cuts.add(j);render(false);break}
+  case 'tip':Q.s.tip=!Q.s.tip;render(false);break;
+  case 'check':check();break;
+  case 'next':next();break;
+  case 'reset':if(!resetAsk){resetAsk=true;render(false)}else{Object.assign(me,{streak:0,last:'',sb:{3:{stars:{},xp:0},4:{stars:{},xp:0}}});save();resetAsk=false;V={n:'home',tab:'path'};render(true)}break;
+ }
+});
+app.addEventListener('input',e=>{if(e.target.id==='ans'&&Q){Q.s.val=e.target.value;const c=document.getElementById('chk');if(c)c.disabled=!e.target.value.trim()}});
+document.addEventListener('keydown',e=>{
+ if(e.key!=='Enter'||V.n!=='quiz'||!Q||e.target.tagName==='BUTTON')return;
+ if(Q.s.checked){e.preventDefault();next()}
+ else if(e.target.id==='ans'&&Q.s.val.trim()){e.preventDefault();check()}
+});
+/* Serie prüfen: Ist der letzte Lerntag älter als gestern, beginnt sie neu. */
+(function(){const t=new Date(),y=new Date();y.setDate(y.getDate()-1);if(me.last&&me.last!==dk(t)&&me.last!==dk(y))me.streak=0})();
+render(true);
+/*JS*/
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol.startsWith('http')){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+</body>
+</html>
