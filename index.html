@@ -307,11 +307,12 @@ UNITS.push(
 );
 UNITS.sort((a,b)=>a.g-b.g);
 const BASIS=['sw','vl','ab','mk'];
+const VAR={Delfin:['Delphin'],Mikrofon:['Mikrophon'],Geografie:['Geographie'],Orthografie:['Orthographie'],Portemonnaie:['Portmonee'],Mayonnaise:['Majonäse'],Ketchup:['Ketschup'],Shampoo:['Schampoo'],Stopp:['Stop']};
 const EXAM={
  mx1:{from:BASIS,types:['c','s'],n:10},
  mx2:{from:[...BASIS,'sz','gr'],types:['c','t','f'],n:12},
  mx3:{from:[...BASIS,'sz','gr','fw','ff','fg','t1','t2'],types:['t','f','p','s'],n:15,typed:true},
- mx4:{from:[...BASIS,'sz','gr','fw','ff','fg','ed','t1','t2'],types:['t','f','p','m'],n:20,typed:true}
+ mx4:{from:[...BASIS,'sz','gr','fw','ff','fg','ed','t1','t2'],types:['t','f','p','s'],n:20,typed:true}
 };
 
 /* ---------- Aufgaben-Bausteine ---------- */
@@ -492,11 +493,11 @@ ITEMS.ab.push(...K4([
  F('Vier Benke stehen im Park.','Benke','Bänke',['Bänkke']),S('Gläser',2),S('Väter',2),S('Zähne',2)
 ]));
 ITEMS.mk.push(...K4([
- C('Vampir',['Wampir','Fampir']),C('Klavier',['Clavier','Klawier']),C('Vulkan',['Wulkan','Fulkan']),C('Verkehr',['Ferkehr','Verkeer']),C('Vorsicht',['Forsicht','Vorsischt']),
+ C('Vampir',['Wampir','Fampir']),C('Klavier',['Klawier','Klavir']),C('Vulkan',['Wulkan','Fulkan']),C('Verkehr',['Ferkehr','Verkeer']),C('Vorsicht',['Forsicht','Vorsischt']),
  C('Maschine',['Maschiene','Mashine']),C('Fieber',['Fiber','Fiebar']),C('Krokodil',['Krokodiel','Crocodil']),C('Lehrer',['Lerer','Lehrehr']),C('Sahne',['Sane','Saahne']),
  C('Kohle',['Kole','Koohle']),C('Bohne',['Bone','Boohne']),C('Gefahr',['Gefar','Gefaar']),C('Papagei',['Papagai','Papagej']),C('Mahlzeit',['Malzeit','Mahlzeid']),
  T('Wampir','Vampir'),T('Wulkan','Vulkan'),T('Sane','Sahne'),T('Fiber','Fieber'),T('Kole','Kohle'),
- F('Der Wulkan spuckt Feuer.','Wulkan','Vulkan',['Fulkan']),F('Ich spiele Klawier.','Klawier','Klavier',['Clavier']),
+ F('Der Wulkan spuckt Feuer.','Wulkan','Vulkan',['Fulkan']),F('Ich spiele Klawier.','Klawier','Klavier',['Klavir']),
  F('Das Krokodiel hat scharfe Zähne.','Krokodiel','Krokodil',['Crocodil']),F('Lena hat Fiber und bleibt im Bett.','Fiber','Fieber',['Fiebar']),
  S('Vulkan',3),S('Klavier',3)
 ]));
@@ -602,9 +603,9 @@ ITEMS.ff=[
  C('Mayonnaise',['Majonese','Mayonese']),C('Restaurant',['Restorant','Restaurang']),C('Ballett',['Ballet','Balett']),C('Souvenir',['Suvenir','Souvenier']),
  C('Journalist',['Jurnalist','Journalisd']),C('Ingenieur',['Inschenieur','Ingenör']),C('Dessert',['Desert','Dessärt']),C('Champignon',['Schampinjon','Champinjon']),
  C('Pyjama',['Pijama','Pyschama']),C('Niveau',['Niveo','Nivau']),C('Genie',['Schenie','Genee']),C('Silhouette',['Silhouete','Silluette']),
- C('Baguette',['Bagett','Baguete']),C('Croissant',['Kruasang','Croisant']),C('Parkett',['Parket','Parkätt']),
- T('Majonese','Mayonnaise'),T('Restorant','Restaurant'),T('Suvenir','Souvenir'),T('Jurnalist','Journalist'),T('Desert','Dessert'),T('Pijama','Pyjama'),T('Bagett','Baguette'),
- F('Zum Frühstück gibt es ein frisches Bagett.','Bagett','Baguette',['Baguete']),F('Wir essen im Restorant.','Restorant','Restaurant',['Restaurang']),
+ C('Baguette',['Bagette','Baguete']),C('Croissant',['Kruasang','Croisant']),C('Parkett',['Parket','Parkätt']),
+ T('Majonese','Mayonnaise'),T('Restorant','Restaurant'),T('Suvenir','Souvenir'),T('Jurnalist','Journalist'),T('Desert','Dessert'),T('Pijama','Pyjama'),T('Bagette','Baguette'),
+ F('Zum Frühstück gibt es ein frisches Baguete.','Baguete','Baguette',['Bagette']),F('Wir essen im Restorant.','Restorant','Restaurant',['Restaurang']),
  F('Der Jurnalist schreibt einen Bericht.','Jurnalist','Journalist',['Journalisd']),F('Zum Nachtisch gibt es ein Desert.','Desert','Dessert',['Dessärt']),
  F('Ich trage einen blauen Pijama.','Pijama','Pyjama',['Pyschama']),F('Auf dem Brot ist Majonese.','Majonese','Mayonnaise',['Mayonese'])
  ])
@@ -629,20 +630,30 @@ ITEMS.fg=[
  C('Chaos',['Kaos','Chaoss']),C('Rhythmus',['Rytmus','Rhytmus']),C('Orchester',['Orkester','Orchestar']),C('Rhabarber',['Rabarber','Rharbarber']),
  C('Physik',['Fysik','Phisik']),C('Chemie',['Kemie','Chemi']),C('Charakter',['Karakter','Charackter']),C('Orchidee',['Orkidee','Orchidehe']),
  C('Chamäleon',['Kameleon','Chamelion']),C('Lexikon',['Lexicon','Lexikohn']),C('Gymnasium',['Gimnasium','Gymnasuim']),C('Symbol',['Simbol','Sümbol']),
- C('System',['Sistem','Süstem']),C('Zylinder',['Cylinder','Zilinder']),C('Mythos',['Mitos','Mythus']),
+ C('System',['Sistem','Süstem']),C('Zylinder',['Cylinder','Zilinder']),C('Mythos',['Mitos','Mythoss']),
  T('Kaos','Chaos'),T('Rytmus','Rhythmus'),T('Orkester','Orchester'),T('Rabarber','Rhabarber'),T('Fysik','Physik'),T('Kemie','Chemie'),T('Karakter','Charakter'),
  F('Im Orkester spielt eine Geige.','Orkester','Orchester',['Orchestar']),F('Zum Nachtisch gibt es Rabarber.','Rabarber','Rhabarber',['Rharbarber']),
  F('Mein Lieblingsfach ist Kemie.','Kemie','Chemie',['Chemi']),F('Im Zimmer herrscht Kaos.','Kaos','Chaos',['Chaoss']),
  F('Der Rytmus der Musik ist schnell.','Rytmus','Rhythmus',['Rhytmus']),F('Das Experiment in Fysik war spannend.','Fysik','Physik',['Phisik'])
  ])
 ];
+const EDW={Joghurt:'Joghurt schreibst du mit h: Jog-hurt. Die Schreibung Jogurt gilt seit 2024 nicht mehr.',Ketchup:'Ketchup: Das Wort stammt aus dem Englischen. Merke dir tch und up am Ende.',Delfin:'Delfin: Das f klingt wie in Fisch. Dieses Wort merkst du dir mit f.',Spaghetti:'Spaghetti: Merke dir gh vor dem e und tt. Die Schreibung Spagetti gilt nicht mehr.',Panther:'Panther: Merke dir th. Die Schreibung Panter gilt nicht mehr.',Stopp:'Stopp: Kurzer Selbstlaut, darum pp am Ende. Merkwort.',Mayonnaise:'Mayonnaise ist ein französisches Wort. Merke dir ay, nn und aise.',Portemonnaie:'Portemonnaie ist ein französisches Wort. Merke dir te nach Port und nnaie am Ende.',Mikrofon:'Mikrofon: Das f klingt wie in Fisch. Merke dir f und o.',Geografie:'Geografie: Merke dir f. Das Wort kommt aus dem Griechischen.',Orthografie:'Orthografie: Merke dir th und f. Das Wort kommt aus dem Griechischen.',Shampoo:'Shampoo kommt aus dem Englischen. Merke dir sh und oo.',Thunfisch:'Thunfisch schreibst du mit th: Thun-fisch. Die Schreibung Tunfisch gilt nicht mehr.',Känguru:'Känguru schreibst du ohne h am Ende. Das Wort kommt aus einer australischen Sprache.'};
+for(const k in EDW)W[k]=W[k]||EDW[k];
+W.Joghurt=EDW.Joghurt;
 ITEMS.ed=[
- M(['Joghurt','Jogurt'],['Joghurd']),M(['Ketchup','Ketschup'],['Kechup']),M(['Delfin','Delphin'],['Delfien']),M(['Spaghetti','Spagetti'],['Spagheti']),
- M(['Panther','Panter'],['Pantter']),M(['Stopp','Stop'],['Stob']),
+ C('Joghurt',['Jogurt','Joghurd']),C('Delfin',['Delfien','Delfinn']),C('Spaghetti',['Spagetti','Spagheti']),C('Panther',['Panter','Pantter']),C('Stopp',['Stob','Stoppp']),C('Ketchup',['Ketchap','Kechup']),
+ T('Jogurt','Joghurt'),T('Delfien','Delfin'),T('Spagetti','Spaghetti'),T('Panter','Panther'),T('Stob','Stopp'),T('Kechup','Ketchup'),
+ F('Zum Frühstück esse ich Jogurt.','Jogurt','Joghurt',['Joghurd']),F('Zum Mittagessen gibt es Spagetti mit Soße.','Spagetti','Spaghetti',['Spagheti']),
+ F('Der Panter schleicht durch den Dschungel.','Panter','Panther',['Pantter']),F('Der Delfien springt aus dem Wasser.','Delfien','Delfin',['Delfinn']),
+ F('Der Bus fährt bis zum Stob.','Stob','Stopp',['Stoppp']),F('Zu den Pommes gibt es Kechup.','Kechup','Ketchup',['Ketchap']),
  ...K4([
- M(['Mayonnaise','Majonäse'],['Majonese','Mayonese']),M(['Portemonnaie','Portmonee'],['Portmonnä']),M(['Mikrofon','Mikrophon'],['Mikrofohn']),
- M(['Geografie','Geographie'],['Geograffie']),M(['Orthografie','Orthographie'],['Orthograffie']),M(['Schampoo','Shampoo'],['Schampo']),
- M(['Tunfisch','Thunfisch'],['Tunfich']),M(['Känguru'],['Känguruh','Kängeru'],4,'Nur Känguru ist richtig. Känguruh ist die alte Schreibweise.')
+ C('Mayonnaise',['Majonese','Mayonese']),C('Portemonnaie',['Portmonnaie','Portemonnäh']),C('Mikrofon',['Mikrofohn','Mikrofonn']),C('Geografie',['Geograffie','Geografi']),
+ C('Orthografie',['Orthograffie','Ortografie']),C('Shampoo',['Shampo','Shampoh']),C('Thunfisch',['Tunfisch','Thunfich']),C('Känguru',['Känguruh','Kängeru']),
+ T('Majonese','Mayonnaise'),T('Portmonnaie','Portemonnaie'),T('Mikrofohn','Mikrofon'),T('Geograffie','Geografie'),T('Orthograffie','Orthografie'),T('Shampo','Shampoo'),T('Tunfisch','Thunfisch'),T('Känguruh','Känguru'),
+ F('Auf der Pizza liegt Tunfisch.','Tunfisch','Thunfisch',['Thunfich']),F('Das Känguruh hüpft über die Wiese.','Känguruh','Känguru',['Kängeru']),
+ F('Ich habe mein Portmonnaie vergessen.','Portmonnaie','Portemonnaie',['Portemonnäh']),F('Die Sängerin singt ins Mikrofohn.','Mikrofohn','Mikrofon',['Mikrofonn']),
+ F('Im Unterricht üben wir Orthograffie.','Orthograffie','Orthografie',['Ortografie']),F('Das Salat-Dressing enthält Majonese.','Majonese','Mayonnaise',['Mayonese']),
+ F('Das Shampo riecht nach Apfel.','Shampo','Shampoo',['Shampoh']),F('In Geograffie lernen wir die Länder kennen.','Geograffie','Geografie',['Geografi'])
  ])
 ];
 for(const u in ITEMS) ITEMS[u].forEach(it=>it.u=u);
@@ -779,7 +790,7 @@ function check(){
  const it=Q.q[Q.pos],s=Q.s;if(s.checked)return;
  let ok=false;
  if(it.t==='c'||it.t==='s')ok=s.sel===it.a;
- else if(it.t==='t'){const v=s.val.trim();ok=v===it.a;if(!ok&&v.toLowerCase()===it.a.toLowerCase())s.note='Achte auf Groß- und Kleinschreibung. '}
+ else if(it.t==='t'){const v=s.val.trim();ok=v===it.a||(VAR[it.a]||[]).includes(v);if(!ok&&v.toLowerCase()===it.a.toLowerCase())s.note='Achte auf Groß- und Kleinschreibung. '}
  else if(it.t==='f'){
   if(s.stage===1&&s.tok===wrongIdx(it)){s.stage=2;beep(true);render(false);return}
   ok=s.stage===2&&s.opt===it.a}
